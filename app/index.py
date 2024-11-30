@@ -17,7 +17,7 @@ def login():
         taiKhoan = request.form['taiKhoan']
         matKhau = request.form['matKhau']
         nv = NhanVien.query.filter_by(taiKhoan=taiKhoan).first()
-        if nv and nv.check_password(matKhau):
+        if nv and nv.check_password(matKhau) and nv.get_VaiTro()=="Nhân Viên Tiếp Nhận":
             session['logged_in'] = True
             session['idNhanVien'] = nv.idNhanVien
             session['hoTen'] = nv.hoTen
