@@ -82,8 +82,8 @@ DROP TABLE IF EXISTS `hoc_ky`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hoc_ky` (
   `idHocKy` int NOT NULL AUTO_INCREMENT,
-  `namHoc` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `hocKy` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `namHoc` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hocKy` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`idHocKy`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -205,7 +205,7 @@ CREATE TABLE `nhan_vien` (
   UNIQUE KEY `SDT` (`SDT`),
   UNIQUE KEY `eMail` (`eMail`),
   UNIQUE KEY `taiKhoan` (`taiKhoan`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -214,7 +214,7 @@ CREATE TABLE `nhan_vien` (
 
 LOCK TABLES `nhan_vien` WRITE;
 /*!40000 ALTER TABLE `nhan_vien` DISABLE KEYS */;
-INSERT INTO `nhan_vien` VALUES (1,'Trần Quốc Phong',1,'2004-10-30','Thành phố Hồ Chí Minh','0799773010','tranquocphong2102@gmail.com','GIAOVIEN','quocphog','scrypt:32768:8:1$YjWxrjmHmX4VmD9H$6ab9cf11c1cb4db92760dc26c1fe497ad238550990bac134492ec61b3a72a432e1bb90acb5c667cff1120d0a9c50bc9554569ea088957a1f442bc864f6d9b95a'),(2,'Tô Quốc Bình',1,'2004-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com','NHANVIENTIEPNHAN','quocbinh','scrypt:32768:8:1$KbzQFJc7KDXGH1XZ$34cfa52f2168fc41f1456c846dc44edff605879250e7a5d80f9532df9bf2f6462deca00c487f3303bf7ec87851c58485605cee19bd3a855d8da8164ce3195cae');
+INSERT INTO `nhan_vien` VALUES (1,'Tô Quốc Bình',1,'2004-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com','NHANVIENTIEPNHAN','quocbinh','e10adc3949ba59abbe56e057f20f883e');
 /*!40000 ALTER TABLE `nhan_vien` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -252,4 +252,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-30 11:17:04
+-- Dump completed on 2024-11-30 17:10:54

@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, session, flash
 from sqlalchemy.testing.plugin.plugin_base import config
 
-from app import app, db
+from app import app, db, dao, login
 from datetime import date,datetime
-from app.models import NhanVien, HocSinh
+from app.models import NhanVien, HocSinh, UserRole
+from flask_login import login_user, logout_user
 
 app.secret_key = 'secret_key'  # Khóa bảo mật cho session
 
@@ -12,38 +13,39 @@ def index():
     return redirect('/login')
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def login_process():
+    err_msg=None
     if request.method == 'POST':
         taiKhoan = request.form['taiKhoan']
         matKhau = request.form['matKhau']
-        nv = NhanVien.query.filter_by(taiKhoan=taiKhoan).first()
-        if nv and nv.check_password(matKhau) and nv.get_VaiTro()=="Nhân Viên Tiếp Nhận":
-            session['logged_in'] = True
-            session['idNhanVien'] = nv.idNhanVien
-            session['hoTen'] = nv.hoTen
-            return redirect('/dashboard')
+
+        nv = dao.auth_user(taikhoan=taiKhoan,matkhau=matKhau)
+        if nv and nv.get_VaiTro()==UserRole.NHANVIENTIEPNHAN:
+            login_user(nv)
+            return redirect('/nhan-vien-tiep-nhan')
         else:
-            flash('Sai tài khoản hoặc mật khẩu!', 'danger')
-            return redirect('/login')
-    return render_template('layout/login.html')
+            err_msg = "Sai tài khoản/ mật khẩu"
+    return render_template('layout/login.html', err_msg=err_msg)
 
 
-@app.route('/dashboard')
+@app.route('/nhan-vien-tiep-nhan')
 def dashboard():
-    if not session.get('logged_in'):
-        return redirect('/login')
-    return render_template('layout/dashboard.html')
+    return render_template('layout/nhanvientiepnhan.html')
 
-@app.route('/logout')
-def logout():
-    session.clear()
+@app.route('/logout', methods=['get', 'post'])
+def logout_process():
+    logout_user()
     return redirect('/login')
 
-@app.before_request
-def require_login():
-    allowed_routes = ['login', 'logout']
-    if request.endpoint not in allowed_routes and not session.get('logged_in'):
-        return redirect('/login')
+@login.user_loader
+def load_user(user_id):
+    return dao.get_nhan_vien_by_id(user_id)
+
+# @app.before_request
+# def require_login():
+#     allowed_routes = ['login', 'logout']
+#     if request.endpoint not in allowed_routes and not session.get('logged_in'):
+#         return redirect('/login')
 
 @app.route('/nhap-ho-so', methods=['POST'])
 def kiem_tra_tuoi():
@@ -92,7 +94,7 @@ def luu_hoc_sinh():
     db.session.commit()
 
     flash("Học sinh đã được lưu thành công!", "success")
-    return redirect("/dashboard")
+    return redirect("/nhan-vien-tiep-nhan")
 
 
 if __name__ == '__main__':

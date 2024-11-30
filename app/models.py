@@ -5,6 +5,7 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, BOOL
 from werkzeug.security import generate_password_hash, check_password_hash
 from enum import Enum as RoleEnum
 from flask_login import UserMixin
+import hashlib
 from sqlalchemy.orm import relationship
 
 class UserRole(RoleEnum):
@@ -27,6 +28,10 @@ class NhanVien(db.Model, UserMixin):
 
     def __str__(self):
         return self.hoTen
+
+    # Thêm phương thức get_id nếu không dùng UserMixin
+    def get_id(self):
+        return str(self.idNhanVien)
 
     def set_password(self, password):
         self.matKhau = generate_password_hash(password)
@@ -147,17 +152,17 @@ if __name__== '__main__':
 
         # Tạo nhân viên
 
-        # nv = NhanVien(
-        #     hoTen="Tô Quốc Bình",
-        #     gioiTinh=True,
-        #     ngaySinh=date(2004, 2, 21),
-        #     diaChi="Thành phố Hồ Chí Minh",
-        #     SDT="0762590966",
-        #     eMail="toquocbinh2102@gmail.com",
-        #     vaiTro=UserRole.NHANVIENTIEPNHAN,
-        #     taiKhoan="quocbinh"
-        # )
-        # nv.set_password("123456")
-        # db.session.add(nv)
-        # db.session.commit()
+        nv = NhanVien(
+            hoTen="Tô Quốc Bình",
+            gioiTinh=True,
+            ngaySinh=date(2004, 2, 21),
+            diaChi="Thành phố Hồ Chí Minh",
+            SDT="0762590966",
+            eMail="toquocbinh2102@gmail.com",
+            vaiTro=UserRole.NHANVIENTIEPNHAN,
+            taiKhoan="quocbinh",
+            matKhau=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
+        )
+        db.session.add(nv)
+        db.session.commit()
 
