@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, flash
+from sqlalchemy import Nullable
 from sqlalchemy.testing.plugin.plugin_base import config
 
 from app import app, db, dao, login
@@ -23,9 +24,13 @@ def login_process():
         if nv and nv.get_VaiTro()==UserRole.NHANVIENTIEPNHAN:
             login_user(nv)
             return redirect('/nhan-vien-tiep-nhan')
+        elif nv and nv.get_VaiTro()==UserRole.NGUOIQUANTRI:
+            login_user(nv)
+            return redirect('/admin')
         else:
             err_msg = "Sai tài khoản/ mật khẩu"
     return render_template('layout/login.html', err_msg=err_msg)
+
 
 
 @app.route('/nhan-vien-tiep-nhan')
@@ -49,8 +54,6 @@ def load_user(user_id):
 
 @app.route('/nhap-ho-so', methods=['POST'])
 def kiem_tra_tuoi():
-    if 'logged_in' not in session:
-        return redirect('/login')
 
     ngay_sinh = request.form.get('ngaySinh')
     if ngay_sinh:
@@ -65,13 +68,11 @@ def kiem_tra_tuoi():
             return render_template('layout/nhap_thong_tin_hoc_sinh.html', ngay_sinh=ngay_sinh)
         else:
             flash(f"Tuổi không phù hợp: {tuoi} tuổi!!!", "warning")
-            return redirect('/dashboard')
+            return redirect('/nhan-vien-tiep-nhan')
     return "Không nhận được thông tin ngày sinh!"
 
 @app.route('/luu-hoc-sinh', methods=['POST'])
 def luu_hoc_sinh():
-    if 'logged_in' not in session:
-        return redirect('/login')
 
     # Lấy thông tin từ form
     ho_ten = request.form.get('hoTen')
@@ -88,7 +89,8 @@ def luu_hoc_sinh():
         ngaySinh=datetime.strptime(ngay_sinh, "%Y-%m-%d").date(),
         diaChi=dia_chi,
         SDT=so_dien_thoai,
-        eMail=email
+        eMail=email,
+        maDsLop = None
     )
     db.session.add(hoc_sinh)
     db.session.commit()
@@ -98,4 +100,5 @@ def luu_hoc_sinh():
 
 
 if __name__ == '__main__':
+    from app import admin
     app.run(debug=True)

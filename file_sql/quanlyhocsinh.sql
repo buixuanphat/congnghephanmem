@@ -107,16 +107,19 @@ DROP TABLE IF EXISTS `hoc_sinh`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hoc_sinh` (
   `idHocSinh` int NOT NULL AUTO_INCREMENT,
-  `hoTen` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hoTen` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `gioiTinh` tinyint(1) NOT NULL,
   `ngaySinh` date NOT NULL,
-  `diaChi` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SDT` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `eMail` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `diaChi` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SDT` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `eMail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `maDsLop` int DEFAULT NULL,
   PRIMARY KEY (`idHocSinh`),
   UNIQUE KEY `SDT` (`SDT`),
-  UNIQUE KEY `eMail` (`eMail`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `eMail` (`eMail`),
+  KEY `maDsLop` (`maDsLop`),
+  CONSTRAINT `hoc_sinh_ibfk_1` FOREIGN KEY (`maDsLop`) REFERENCES `danh_sach_lop` (`maDsLop`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -125,7 +128,7 @@ CREATE TABLE `hoc_sinh` (
 
 LOCK TABLES `hoc_sinh` WRITE;
 /*!40000 ALTER TABLE `hoc_sinh` DISABLE KEYS */;
-INSERT INTO `hoc_sinh` VALUES (1,'Trần Quốc Phong',1,'2004-10-30','Thành phố Hồ Chí Minh','0123456789','tqphong2004@gmail.com'),(2,'Tô Quốc Bình',1,'2004-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com'),(4,'Trần Huỳnh Sang',1,'2004-02-21','Cà Mau','0987654321','hsang1@gmail.com'),(5,'Nguyễn Đăng Khôi',1,'2004-08-20','Thành phố Hồ Chí Minh','0998877665','khoi123@gmail.com'),(6,'Nguyễn Đăng Đăng',0,'2008-02-12','Thành phố Hồ Chí Minh','0564822138','Tranthanhbaokhanh@gmail.com');
+INSERT INTO `hoc_sinh` VALUES (1,'Trần Quốc Phong',1,'2009-03-21','Thành phố Hồ Chí Minh','0123456789','tqphong2004@gmail.com',NULL),(2,'Nguyễn Đăng Đăng',0,'2009-03-12','Thành phố Hồ Chí Minh','0564822138','Tranthanhbaokhanh@gmail.com',NULL);
 /*!40000 ALTER TABLE `hoc_sinh` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -192,20 +195,20 @@ DROP TABLE IF EXISTS `nhan_vien`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nhan_vien` (
   `idNhanVien` int NOT NULL AUTO_INCREMENT,
-  `hoTen` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hoTen` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `gioiTinh` tinyint(1) NOT NULL,
   `ngaySinh` date NOT NULL,
-  `diaChi` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SDT` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `eMail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `vaiTro` enum('ADMIN','NHANVIENTIEPNHAN','GIAOVIEN','NGUOIQUANTRI') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `taiKhoan` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `matKhau` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `diaChi` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SDT` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `eMail` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `vaiTro` enum('ADMIN','NHANVIENTIEPNHAN','GIAOVIEN','NGUOIQUANTRI') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `taiKhoan` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `matKhau` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`idNhanVien`),
   UNIQUE KEY `SDT` (`SDT`),
   UNIQUE KEY `eMail` (`eMail`),
   UNIQUE KEY `taiKhoan` (`taiKhoan`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -214,7 +217,7 @@ CREATE TABLE `nhan_vien` (
 
 LOCK TABLES `nhan_vien` WRITE;
 /*!40000 ALTER TABLE `nhan_vien` DISABLE KEYS */;
-INSERT INTO `nhan_vien` VALUES (1,'Tô Quốc Bình',1,'2004-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com','NHANVIENTIEPNHAN','quocbinh','e10adc3949ba59abbe56e057f20f883e');
+INSERT INTO `nhan_vien` VALUES (1,'Tô Quốc Bình',1,'2004-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com','NHANVIENTIEPNHAN','quocbinh','e10adc3949ba59abbe56e057f20f883e'),(3,'Trần Quốc Phong',1,'2004-10-30','Thành phố Hồ Chí Minh','0799773010','toquocphong2102@gmail.com','NGUOIQUANTRI','quocphong','e10adc3949ba59abbe56e057f20f883e');
 /*!40000 ALTER TABLE `nhan_vien` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -252,4 +255,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-30 17:10:54
+-- Dump completed on 2024-12-02 19:09:01

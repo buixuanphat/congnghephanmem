@@ -1,0 +1,9 @@
+{% extends 'admin/model/list.html' %}
+
+{% block list_actions %}
+    <div class="btn-group">
+        <a href="{{ url_for('danh_sach_lop.create_view') }}" class="btn btn-primary">
+            Tạo Danh Sách Lớp
+        </a>
+    </div>
+{% endblock %}

@@ -80,6 +80,8 @@ class HocSinh(db.Model):
     eMail = Column(String(255), unique=True, nullable=False)
     maDsLop = Column(Integer, ForeignKey('danh_sach_lop.maDsLop'), nullable=True)
 
+    hocSinhLop = relationship('DanhSachLop', backref='danhSachHocSinh')
+
 
 class KhoiLop(db.Model):
     idKhoiLop = Column(Integer, primary_key=True, autoincrement=True)
@@ -119,7 +121,8 @@ class DanhSachLop(db.Model):
 
     giaoVienChuNhiem = relationship('NhanVien', backref='lop')
     hocKy = relationship(HocKy, backref='lop')
-    hocSinhs = relationship('HocSinh', backref='lop', lazy=True)
+    hocSinhs = relationship('HocSinh', backref='danhSachLop', lazy=True)
+
 
     def __str__(self):
         return f"{self.tenLop}"
@@ -152,17 +155,17 @@ if __name__== '__main__':
 
         # Tạo nhân viên
 
-        nv = NhanVien(
-            hoTen="Tô Quốc Bình",
-            gioiTinh=True,
-            ngaySinh=date(2004, 2, 21),
-            diaChi="Thành phố Hồ Chí Minh",
-            SDT="0762590966",
-            eMail="toquocbinh2102@gmail.com",
-            vaiTro=UserRole.NHANVIENTIEPNHAN,
-            taiKhoan="quocbinh",
-            matKhau=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
-        )
-        db.session.add(nv)
-        db.session.commit()
+        # nv = NhanVien(
+        #     hoTen="Trần Quốc Phong",
+        #     gioiTinh=True,
+        #     ngaySinh=date(2004, 10, 30),
+        #     diaChi="Thành phố Hồ Chí Minh",
+        #     SDT="0799773010",
+        #     eMail="toquocphong2102@gmail.com",
+        #     vaiTro=UserRole.NGUOIQUANTRI,
+        #     taiKhoan="quocphong",
+        #     matKhau=str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
+        # )
+        # db.session.add(nv)
+        # db.session.commit()
 
