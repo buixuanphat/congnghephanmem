@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container mt-5">
+
         <!-- Thông báo nếu có -->
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -19,6 +20,7 @@
             {% endfor %}
         {% endif %}
         {% endwith %}
+
         <h1 class="text-center">Nhập thông tin học sinh</h1>
         <form method="POST" action="/luu-hoc-sinh">
             <div class="mb-3">

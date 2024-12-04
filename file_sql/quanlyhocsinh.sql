@@ -35,7 +35,7 @@ CREATE TABLE `danh_sach_lop` (
   CONSTRAINT `danh_sach_lop_ibfk_1` FOREIGN KEY (`tenPhong_id`) REFERENCES `phong_hoc` (`idPhongHoc`),
   CONSTRAINT `danh_sach_lop_ibfk_2` FOREIGN KEY (`giaoVienChuNhiem_id`) REFERENCES `nhan_vien` (`idNhanVien`),
   CONSTRAINT `danh_sach_lop_ibfk_3` FOREIGN KEY (`hocKy_id`) REFERENCES `hoc_ky` (`idHocKy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,6 +44,7 @@ CREATE TABLE `danh_sach_lop` (
 
 LOCK TABLES `danh_sach_lop` WRITE;
 /*!40000 ALTER TABLE `danh_sach_lop` DISABLE KEYS */;
+INSERT INTO `danh_sach_lop` VALUES (2,1,NULL,4,1),(3,1,NULL,3,1);
 /*!40000 ALTER TABLE `danh_sach_lop` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -119,7 +120,7 @@ CREATE TABLE `hoc_sinh` (
   UNIQUE KEY `eMail` (`eMail`),
   KEY `maDsLop` (`maDsLop`),
   CONSTRAINT `hoc_sinh_ibfk_1` FOREIGN KEY (`maDsLop`) REFERENCES `danh_sach_lop` (`maDsLop`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -128,7 +129,7 @@ CREATE TABLE `hoc_sinh` (
 
 LOCK TABLES `hoc_sinh` WRITE;
 /*!40000 ALTER TABLE `hoc_sinh` DISABLE KEYS */;
-INSERT INTO `hoc_sinh` VALUES (1,'Trần Quốc Phong',1,'2009-03-21','Thành phố Hồ Chí Minh','0123456789','tqphong2004@gmail.com',NULL),(2,'Nguyễn Đăng Đăng',0,'2009-03-12','Thành phố Hồ Chí Minh','0564822138','Tranthanhbaokhanh@gmail.com',NULL);
+INSERT INTO `hoc_sinh` VALUES (1,'Trần Quốc Phong',1,'2009-03-21','Thành phố Hồ Chí Minh','0123456789','tqphong2004@gmail.com',2),(2,'Nguyễn Đăng Đăng',0,'2009-03-12','Thành phố Hồ Chí Minh','0564822138','Tranthanhbaokhanh@gmail.com',2),(5,'Tô Quốc Bình',1,'2009-05-04','Thành phố Hồ Chí Minh','0998877665','tqpbinh2004@gmail.com',2),(7,'Trần Huỳnh Sang',1,'2009-01-23','Cà Mau','0911342943','hsang1@gmail.com',2),(8,'Trần Duy Sang',1,'2009-12-04','Hà Nội','0792899073','hsang123@gmail.com',3),(9,'Nguyễn Văn Tanh',1,'2009-06-23','Thành phố Hồ Chí Minh','0987654322','225101007tah@ou.edu.vn',3),(10,'Nguyễn Thanh Hùng',1,'2009-06-05','Thành phố Hồ Chí Minh','0911342944','hungdb@ou.edu.vn',3);
 /*!40000 ALTER TABLE `hoc_sinh` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -208,7 +209,7 @@ CREATE TABLE `nhan_vien` (
   UNIQUE KEY `SDT` (`SDT`),
   UNIQUE KEY `eMail` (`eMail`),
   UNIQUE KEY `taiKhoan` (`taiKhoan`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -217,7 +218,7 @@ CREATE TABLE `nhan_vien` (
 
 LOCK TABLES `nhan_vien` WRITE;
 /*!40000 ALTER TABLE `nhan_vien` DISABLE KEYS */;
-INSERT INTO `nhan_vien` VALUES (1,'Tô Quốc Bình',1,'2004-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com','NHANVIENTIEPNHAN','quocbinh','e10adc3949ba59abbe56e057f20f883e'),(3,'Trần Quốc Phong',1,'2004-10-30','Thành phố Hồ Chí Minh','0799773010','toquocphong2102@gmail.com','NGUOIQUANTRI','quocphong','e10adc3949ba59abbe56e057f20f883e');
+INSERT INTO `nhan_vien` VALUES (1,'Tô Quốc Bình',1,'2004-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com','NHANVIENTIEPNHAN','quocbinh','e10adc3949ba59abbe56e057f20f883e'),(3,'Trần Quốc Phong',1,'2004-10-30','Thành phố Hồ Chí Minh','0799773010','toquocphong2102@gmail.com','NGUOIQUANTRI','quocphong','e10adc3949ba59abbe56e057f20f883e'),(5,'Bùi Xuân Phát',0,'2004-12-08','Hà Nội','0792821010','buixuanphat@gmail.com','GIAOVIEN','xuanphat','123456'),(6,'Trần Huỳnh Sang',0,'1992-09-09','Cà Mau','0792821011','Sangdbrr@gmail.com','GIAOVIEN','huynhsang','123456'),(7,'Nguyễn Đăng Khôi',0,'1984-07-17','Thành phố Hồ Chí Minh','0794521012','khoi@gmail.com','GIAOVIEN','dangkhoi','123456');
 /*!40000 ALTER TABLE `nhan_vien` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -255,4 +256,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-02 19:09:01
+-- Dump completed on 2024-12-04 11:40:42

@@ -9,10 +9,9 @@ import hashlib
 from sqlalchemy.orm import relationship
 
 class UserRole(RoleEnum):
-    ADMIN = 1
+    NGUOIQUANTRI = 1
     NHANVIENTIEPNHAN = 2
     GIAOVIEN = 3
-    NGUOIQUANTRI = 4
 
 class NhanVien(db.Model, UserMixin):
     idNhanVien = Column(Integer, primary_key=True, autoincrement=True)

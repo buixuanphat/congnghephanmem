@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, session, flash
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 from sqlalchemy import Nullable
 from sqlalchemy.testing.plugin.plugin_base import config
 
 from app import app, db, dao, login
 from datetime import date,datetime
-from app.models import NhanVien, HocSinh, UserRole
+from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienChuNhiem
 from flask_login import login_user, logout_user
 
 app.secret_key = 'secret_key'  # Khóa bảo mật cho session
@@ -97,6 +97,50 @@ def luu_hoc_sinh():
 
     flash("Học sinh đã được lưu thành công!", "success")
     return redirect("/nhan-vien-tiep-nhan")
+
+@app.route('/tao-danh-sach-lop')
+def create_auto_classes():
+    try:
+        # Lấy toàn bộ danh sách học sinh
+        students = HocSinh.query.filter(HocSinh.maDsLop == None).all()
+        if not students:
+            flash("Không có học sinh nào để tạo lớp!", "error")
+            return redirect('/admin')
+
+         # Tạo một lớp mới
+        phong_hoc = PhongHoc.query.first()  # Giả định có sẵn một phòng học
+        hoc_ky = HocKy.query.first()  # Giả định có sẵn một học kỳ
+        if not phong_hoc or not hoc_ky:
+            return jsonify({"error": "Phòng học hoặc học kỳ không tồn tại"}), 400
+
+
+
+        batch_size = 4  # Số học sinh mỗi lớp
+        for i in range(0, len(students), batch_size):
+            class_students = students[i:i + batch_size]
+
+            # Tạo danh sách lớp mới
+            new_class = DanhSachLop(
+                tenPhong_id=phong_hoc.idPhongHoc,  # Thay đổi nếu cần
+                giaoVienChuNhiem_id=None,
+                siSo=len(class_students),
+                hocKy_id=1  # Đặt ID học kỳ phù hợp
+            )
+            db.session.add(new_class)
+            db.session.commit()
+
+            # Gán học sinh vào lớp
+            for student in class_students:
+                student.maDsLop = new_class.maDsLop
+                db.session.add(student)
+
+        db.session.commit()
+        flash("Danh sách lớp đã được tạo thành công!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Lỗi xảy ra khi tạo danh sách lớp: {str(e)}", "error")
+
+    return redirect('/admin')
 
 
 if __name__ == '__main__':

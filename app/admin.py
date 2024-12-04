@@ -11,6 +11,11 @@ admin = Admin(app=app, name='Người Quản Trị', template_mode='bootstrap4')
 class DanhSachLopView(ModelView):
     pass
 
+
+
+
+
+
 admin.add_view(ModelView(NhanVien, db.session))
 admin.add_view(ModelView(HocSinh, db.session))
 admin.add_view(DanhSachLopView(DanhSachLop, db.session))
