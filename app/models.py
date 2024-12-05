@@ -3,15 +3,28 @@ from datetime import date
 from app import db, app
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, BOOLEAN, Date, Enum
 from werkzeug.security import generate_password_hash, check_password_hash
-from enum import Enum as RoleEnum
+from enum import Enum as RoleEnum, unique
 from flask_login import UserMixin
 import hashlib
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Relationship
+
 
 class UserRole(RoleEnum):
     NGUOIQUANTRI = 1
     NHANVIENTIEPNHAN = 2
-    GIAOVIEN = 3
+
+
+class BuoiHoc(RoleEnum):
+    SANG = 1
+    CHIEU = 2
+
+class MonHoc(db.Model):
+    idMonHoc = Column(Integer, primary_key=True, autoincrement=True)
+    tenMonHoc = Column(String(50), nullable=False)
+    giaoViens = relationship('GiaoVien',backref='monhoc', lazy=True)
+
+    def __str__(self):
+        return self.tenMonHoc
 
 class NhanVien(db.Model, UserMixin):
     idNhanVien = Column(Integer, primary_key=True, autoincrement=True)
@@ -42,13 +55,33 @@ class NhanVien(db.Model, UserMixin):
         return self.vaiTro
 
 
-class GiaoVienChuNhiem(NhanVien):
+class GiaoVien(db.Model):
+    idGiaoVien = Column(Integer, primary_key=True)
+    hoTen = Column(String(50), nullable=False)
+    gioiTinh = Column(Boolean, nullable=False)
+    ngaySinh = Column(Date, nullable=False)
+    diaChi = Column(String(255), nullable=False)
+    SDT = Column(String(20), unique=True, nullable=False)
+    eMail = Column(String(255), unique=True, nullable=False)
+    taiKhoan = Column(String(50), unique=True, nullable=False)
+    matKhau = Column(String(255), nullable=False)
+    idMonHoc = Column(Integer, ForeignKey(MonHoc.idMonHoc),nullable=False)
+
+    monHoc = relationship(MonHoc,backref='giaovien')
+
+    def __str__(self):
+        return self.hoTen
+
+
+class GiaoVienChuNhiem(db.Model):
     __tablename__ = 'giao_vien_chu_nhiem'
-    idNhanVien = Column(Integer, ForeignKey(NhanVien.idNhanVien), primary_key=True)
-    idDsLop = Column(Integer, ForeignKey('danh_sach_lop.maDsLop'), nullable=True)
+    idGiaoVienCN = Column(Integer, primary_key=True,autoincrement=True)
+    idGiaoVien = Column(Integer, ForeignKey(GiaoVien.idGiaoVien),nullable=True)
+    idDsLop = Column(Integer, ForeignKey('danh_sach_lop.maDsLop', ondelete="CASCADE"), nullable=True)
 
     # Quan hệ với DanhSachLop
-    lopChuNhiem = relationship('DanhSachLop', backref='giaoVien')
+    giaoVien = relationship(GiaoVien, backref="chuNhiemLop")
+    lopChuNhiem = relationship('DanhSachLop', backref='giaoVienPhuTrach')
 
     def __str__(self):
         return f"GV: {self.hoTen} - Lớp: {self.lopChuNhiem.tenLop if self.lopChuNhiem else 'Chưa phân lớp'}"
@@ -107,21 +140,35 @@ class PhongHoc(db.Model):
 class KhoiPhong(db.Model):
     __tablename__ = 'khoi_phong'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    khoiLop_id = Column(Integer, ForeignKey('khoi_lop.idKhoiLop'), nullable=False)
-    phongHoc_id = Column(Integer, ForeignKey('phong_hoc.idPhongHoc'), nullable=False)
+    khoiLop_id = Column(Integer, ForeignKey(KhoiLop.idKhoiLop), nullable=False)
+    phongHoc_id = Column(Integer, ForeignKey(PhongHoc.idPhongHoc), nullable=False)
+    buoiHoc = Column(Enum(BuoiHoc),nullable=True)
+
+    KhoiLop = relationship(KhoiLop,backref='khoilop')
+    PhongHoc = relationship(PhongHoc, backref='phonghoc')
+
 
 
 class DanhSachLop(db.Model):
     maDsLop = Column(Integer, primary_key=True, autoincrement=True)
-    tenPhong_id = Column(Integer, ForeignKey(PhongHoc.idPhongHoc), nullable=False)
-    giaoVienChuNhiem_id = Column(Integer, ForeignKey(NhanVien.idNhanVien), nullable=True)
+    khoiPhong_id = Column(Integer, ForeignKey(KhoiPhong.id),unique=True, nullable=False)
+    tenLop = Column(String(50),nullable=True)
+    giaoVienChuNhiem_id = Column(Integer, ForeignKey(GiaoVien.idGiaoVien), nullable=True)
     siSo = db.Column(Integer, nullable=False)
     hocKy_id = Column(Integer, ForeignKey(HocKy.idHocKy), nullable=False)
 
-    giaoVienChuNhiem = relationship('NhanVien', backref='lop')
+    giaoVienChuNhiem = relationship(GiaoVien, backref='lop')
     hocKy = relationship(HocKy, backref='lop')
-    hocSinhs = relationship('HocSinh', backref='danhSachLop', lazy=True)
+    hocSinhs = relationship(HocSinh, backref='danhSachLop', lazy=True)
+    phongHoc = relationship(KhoiPhong, backref='danhSachLops')
 
+    # Thêm quan hệ với GiaoVienChuNhiem
+    giaoVienChuNhiems = relationship(
+        'GiaoVienChuNhiem',
+        backref='lop',
+        cascade="all, delete",
+        lazy=True
+    )
 
     def __str__(self):
         return f"{self.tenLop}"
