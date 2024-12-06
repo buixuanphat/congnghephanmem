@@ -5,16 +5,31 @@ from flask_admin import Admin, BaseView, expose
 from app import app, db
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, logout_user
-from app.models import NhanVien, HocSinh, DanhSachLop, GiaoVienChuNhiem, MonHoc, GiaoVien, UserRole, PhongHoc, KhoiPhong
+from app.models import NhanVien, HocSinh, DanhSachLop, GiaoVienChuNhiem, MonHoc, GiaoVien, UserRole, PhongHoc
 
 admin = Admin(app=app, name='Người Quản Trị', template_mode='bootstrap4')
 
 
 
 class DanhSachLopView(ModelView):
-    pass
+    form_columns = ['tenLop', 'hocKy', 'giaoVienChuNhiem', 'phongHoc', 'siSo']
+
+    # def on_model_change(self, form, model, is_created):
+    #     # Kiểm tra nếu phòng học đã được sử dụng
+    #     existing_class = DanhSachLop.query.filter(
+    #         DanhSachLop.idPhongHoc == model.idPhongHoc,
+    #         DanhSachLop.maDsLop != model.maDsLop  # Không kiểm tra chính lớp hiện tại
+    #     ).first()
+    #
+    #     if existing_class:
+    #         flash(f"Phòng học {model.phongHoc.tenPhong} đã được sử dụng trong lớp khác.", "error")
+    #         raise ValueError(f"Phòng học {model.phongHoc.tenPhong} đã được chọn.")
+    #
+    #     super(DanhSachLopView, self).on_model_change(form, model, is_created)
+
 
 class GiaoVienView(ModelView):
+    column_list = ['hoTen', 'gioiTinh', 'ngaySinh', 'diaChi', 'SDT', 'eMail', 'monHoc', 'taiKhoan', 'matKhau']
     form_columns = ['hoTen', 'gioiTinh', 'ngaySinh', 'diaChi', 'SDT', 'eMail', 'taiKhoan', 'matKhau', 'monHoc']
 
     def on_model_change(self, form, model, is_created):
@@ -23,9 +38,6 @@ class GiaoVienView(ModelView):
 
         super(GiaoVienView, self).on_model_change(form, model, is_created)
 
-class KhoiPhongView(ModelView):
-    column_list = ['id', 'KhoiLop', 'PhongHoc', 'buoiHoc']
-    form_columns = ['KhoiLop', 'PhongHoc', 'buoiHoc']
 
 
     # def on_model_change(self, form, model, is_created):
@@ -45,7 +57,6 @@ class KhoiPhongView(ModelView):
 
 admin.add_view(ModelView(MonHoc, db.session))
 admin.add_view(ModelView(PhongHoc, db.session))
-admin.add_view(KhoiPhongView(KhoiPhong, db.session))
 admin.add_view(ModelView(NhanVien, db.session))
 admin.add_view(GiaoVienView(GiaoVien, db.session))
 admin.add_view(ModelView(GiaoVienChuNhiem, db.session))

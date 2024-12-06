@@ -5,7 +5,7 @@ from sqlalchemy.testing.plugin.plugin_base import config
 
 from app import app, db, dao, login
 from datetime import date, datetime
-from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienChuNhiem, GiaoVien, KhoiPhong
+from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienChuNhiem, GiaoVien
 from flask_login import login_user, logout_user
 
 app.secret_key = 'secret_key'  # Khóa bảo mật cho session
@@ -64,7 +64,7 @@ def kiem_tra_tuoi():
         # Tính tuổi
         ngay_sinh = datetime.strptime(ngay_sinh, "%Y-%m-%d").date()
         hom_nay = date.today()
-        tuoi = hom_nay.year - ngay_sinh.year - ((hom_nay.month, hom_nay.day) < (ngay_sinh.month, ngay_sinh.day))
+        tuoi = hom_nay.year - ngay_sinh.year
 
         # Kiểm tra tuổi
         if app.config["MIN_AGE"] <= tuoi <= app.config["MAX_AGE"]:
@@ -82,6 +82,7 @@ def luu_hoc_sinh():
     ho_ten = request.form.get('hoTen')
     gioi_tinh = request.form.get('gioiTinh')  # Nam = 1, Nữ = 0
     ngay_sinh = request.form.get('ngaySinh')
+    khoi = request.form.get('khoi')
     dia_chi = request.form.get('diaChi')
     so_dien_thoai = request.form.get('soDienThoai')
     email = request.form.get('email')
@@ -91,6 +92,7 @@ def luu_hoc_sinh():
         hoTen=ho_ten,
         gioiTinh=(gioi_tinh == '1'),
         ngaySinh=datetime.strptime(ngay_sinh, "%Y-%m-%d").date(),
+        khoi=khoi,
         diaChi=dia_chi,
         SDT=so_dien_thoai,
         eMail=email,
@@ -103,6 +105,11 @@ def luu_hoc_sinh():
     return redirect("/nhan-vien-tiep-nhan")
 
 
+@app.route('/danh-sach-lop')
+def show_ds_lop():
+    return render_template('layout/nhanvientiepnhan.html')
+
+
 @app.route('/tao-danh-sach-lop')
 def create_auto_classes():
     try:
@@ -112,16 +119,21 @@ def create_auto_classes():
             flash("Không có học sinh nào để tạo lớp!", "error")
             return redirect('/admin')
 
-        def calculate_age(birthdate):
-            today = date.today()
-            return today.year - birthdate.year
 
-        age_groups = {}
+        # Nhóm học sinh theo khối
+        grade_groups = {
+            "10": [],
+            "11": [],
+            "12": []
+        }
         for student in students:
-            age = calculate_age(student.ngaySinh)
-            if age not in age_groups:
-                age_groups[age] = []
-            age_groups[age].append(student)
+            if student.khoi=="Khối 10":
+                grade_groups["10"].append(student)
+            elif student.khoi=="Khối 11":
+                grade_groups["11"].append(student)
+            elif student.khoi=="Khối 12":
+                grade_groups["12"].append(student)
+
 
         # Lấy học kỳ hiện tại
         hoc_ky = HocKy.query.order_by(HocKy.idHocKy.desc()).first()
@@ -136,24 +148,18 @@ def create_auto_classes():
             return jsonify({"error": "Không có giáo viên để gán"}), 400
 
         # Xử lý tạo lớp cho từng nhóm tuổi
-        for age, group_students in age_groups.items():
-            batch_size = 2  # Số lượng học sinh mỗi lớp
+        for khoi, group_students in grade_groups.items():
+            batch_size = app.config["SI_SO"]  # Số lượng học sinh mỗi lớp
             for i in range(0, len(group_students), batch_size):
                 class_students = group_students[i:i + batch_size]
-
-                khoi_phong_su_dung = {ds.maDsLop for ds in DanhSachLop.query.all()}
-                khoi_phong_kha_dung = KhoiPhong.query.filter(~KhoiPhong.id.in_(khoi_phong_su_dung)).all()
-                if not khoi_phong_kha_dung:
-                    flash("Không còn khối phòng khả dụng để tạo lớp!", "error")
-                    return redirect('/admin')
 
                 # Chọn giáo viên ngẫu nhiên
                 giao_vien_CN = choice(giao_vien_list)
 
                 # Tạo danh sách lớp mới
                 new_class = DanhSachLop(
-                    khoiPhong_id=khoi_phong_kha_dung.id,  # Gán phòng học
-                    tenLop = None,
+                    # Gán phòng học
+                    tenLop=f"{khoi}",
                     giaoVienChuNhiem_id=giao_vien_CN.idGiaoVien,
                     siSo=len(class_students),
                     hocKy_id=hoc_ky.idHocKy  # Học kỳ hiện tại
@@ -179,13 +185,12 @@ def create_auto_classes():
 
         db.session.commit()
         flash("Danh sách lớp đã được tạo thành công theo độ tuổi!", "success")
+
     except Exception as e:
         db.session.rollback()
         flash(f"Lỗi xảy ra khi tạo danh sách lớp: {str(e)}", "error")
 
     return redirect('/admin')
-
-
 
 if __name__ == '__main__':
     from app import admin

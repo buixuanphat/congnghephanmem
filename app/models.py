@@ -1,7 +1,7 @@
 from datetime import date
 
 from app import db, app
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, BOOLEAN, Date, Enum
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, BOOLEAN, Date, Enum, UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from enum import Enum as RoleEnum, unique
 from flask_login import UserMixin
@@ -13,10 +13,10 @@ class UserRole(RoleEnum):
     NGUOIQUANTRI = 1
     NHANVIENTIEPNHAN = 2
 
-
-class BuoiHoc(RoleEnum):
-    SANG = 1
-    CHIEU = 2
+class Khoi(RoleEnum):
+    KHOI10 = 1
+    KHOI11 = 2
+    KHOI12 = 3
 
 class MonHoc(db.Model):
     idMonHoc = Column(Integer, primary_key=True, autoincrement=True)
@@ -83,8 +83,6 @@ class GiaoVienChuNhiem(db.Model):
     giaoVien = relationship(GiaoVien, backref="chuNhiemLop")
     lopChuNhiem = relationship('DanhSachLop', backref='giaoVienPhuTrach')
 
-    def __str__(self):
-        return f"GV: {self.hoTen} - Lớp: {self.lopChuNhiem.tenLop if self.lopChuNhiem else 'Chưa phân lớp'}"
 
 
 class HocKy(db.Model):
@@ -107,6 +105,7 @@ class HocSinh(db.Model):
     hoTen = Column(String(50), nullable=False)
     gioiTinh = Column(Boolean, nullable=False)
     ngaySinh = Column(Date, nullable=False)
+    khoi = Column(String(50), nullable=False)
     diaChi = Column(String(255), nullable=False)
     SDT = Column(String(20), unique=True, nullable=False)
     eMail = Column(String(255), unique=True, nullable=False)
@@ -114,45 +113,19 @@ class HocSinh(db.Model):
 
     hocSinhLop = relationship('DanhSachLop', backref='danhSachHocSinh')
 
-
-class KhoiLop(db.Model):
-    idKhoiLop = Column(Integer, primary_key=True, autoincrement=True)
-    tenKhoi = Column(String(10), unique=True, nullable=False)
-
-    # Quan hệ Nhiều-Nhiều với PhongHoc
-    phong_hocs = db.relationship('PhongHoc', secondary='khoi_phong', back_populates='khoi_lops')
-
-    def __str__(self):
-        return self.tenKhoi
-
-
 class PhongHoc(db.Model):
     idPhongHoc = Column(Integer, primary_key=True, autoincrement=True)
     tenPhong = Column(String(50), unique=True, nullable=False)  # VD: "Phòng 101", "Phòng 202"
 
-    # Quan hệ Nhiều-Nhiều với KhoiLop
-    khoi_lops = relationship('KhoiLop', secondary='khoi_phong', back_populates='phong_hocs')
-
     def __str__(self):
         return self.tenPhong
 
-# Bảng trung gian giữa KhoiLop và PhongHoc
-class KhoiPhong(db.Model):
-    __tablename__ = 'khoi_phong'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    khoiLop_id = Column(Integer, ForeignKey(KhoiLop.idKhoiLop), nullable=False)
-    phongHoc_id = Column(Integer, ForeignKey(PhongHoc.idPhongHoc), nullable=False)
-    buoiHoc = Column(Enum(BuoiHoc),nullable=True)
-
-    KhoiLop = relationship(KhoiLop,backref='khoilop')
-    PhongHoc = relationship(PhongHoc, backref='phonghoc')
-
-
 
 class DanhSachLop(db.Model):
+
     maDsLop = Column(Integer, primary_key=True, autoincrement=True)
-    khoiPhong_id = Column(Integer, ForeignKey(KhoiPhong.id),unique=True, nullable=False)
-    tenLop = Column(String(50),nullable=True)
+    idPhongHoc = Column(Integer, ForeignKey(PhongHoc.idPhongHoc),unique=True, nullable=True)
+    tenLop = Column(String(50),unique=True,nullable=True)
     giaoVienChuNhiem_id = Column(Integer, ForeignKey(GiaoVien.idGiaoVien), nullable=True)
     siSo = db.Column(Integer, nullable=False)
     hocKy_id = Column(Integer, ForeignKey(HocKy.idHocKy), nullable=False)
@@ -160,7 +133,7 @@ class DanhSachLop(db.Model):
     giaoVienChuNhiem = relationship(GiaoVien, backref='lop')
     hocKy = relationship(HocKy, backref='lop')
     hocSinhs = relationship(HocSinh, backref='danhSachLop', lazy=True)
-    phongHoc = relationship(KhoiPhong, backref='danhSachLops')
+    phongHoc = relationship(PhongHoc, backref='danhSachLops')
 
     # Thêm quan hệ với GiaoVienChuNhiem
     giaoVienChuNhiems = relationship(

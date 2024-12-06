@@ -24,19 +24,19 @@ DROP TABLE IF EXISTS `danh_sach_lop`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `danh_sach_lop` (
   `maDsLop` int NOT NULL AUTO_INCREMENT,
-  `khoiPhong_id` int NOT NULL,
+  `idPhongHoc` int DEFAULT NULL,
   `tenLop` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `giaoVienChuNhiem_id` int DEFAULT NULL,
   `siSo` int NOT NULL,
   `hocKy_id` int NOT NULL,
   PRIMARY KEY (`maDsLop`),
-  KEY `khoiPhong_id` (`khoiPhong_id`),
+  UNIQUE KEY `idPhongHoc` (`idPhongHoc`),
   KEY `giaoVienChuNhiem_id` (`giaoVienChuNhiem_id`),
   KEY `hocKy_id` (`hocKy_id`),
-  CONSTRAINT `danh_sach_lop_ibfk_1` FOREIGN KEY (`khoiPhong_id`) REFERENCES `khoi_phong` (`id`),
+  CONSTRAINT `danh_sach_lop_ibfk_1` FOREIGN KEY (`idPhongHoc`) REFERENCES `phong_hoc` (`idPhongHoc`),
   CONSTRAINT `danh_sach_lop_ibfk_2` FOREIGN KEY (`giaoVienChuNhiem_id`) REFERENCES `giao_vien` (`idGiaoVien`),
   CONSTRAINT `danh_sach_lop_ibfk_3` FOREIGN KEY (`hocKy_id`) REFERENCES `hoc_ky` (`idHocKy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,6 +45,7 @@ CREATE TABLE `danh_sach_lop` (
 
 LOCK TABLES `danh_sach_lop` WRITE;
 /*!40000 ALTER TABLE `danh_sach_lop` DISABLE KEYS */;
+INSERT INTO `danh_sach_lop` VALUES (17,NULL,'10',4,1,2),(18,NULL,'11',3,1,2);
 /*!40000 ALTER TABLE `danh_sach_lop` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -101,7 +102,7 @@ CREATE TABLE `giao_vien_chu_nhiem` (
   KEY `idDsLop` (`idDsLop`),
   CONSTRAINT `giao_vien_chu_nhiem_ibfk_1` FOREIGN KEY (`idGiaoVien`) REFERENCES `giao_vien` (`idGiaoVien`),
   CONSTRAINT `giao_vien_chu_nhiem_ibfk_2` FOREIGN KEY (`idDsLop`) REFERENCES `danh_sach_lop` (`maDsLop`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -110,6 +111,7 @@ CREATE TABLE `giao_vien_chu_nhiem` (
 
 LOCK TABLES `giao_vien_chu_nhiem` WRITE;
 /*!40000 ALTER TABLE `giao_vien_chu_nhiem` DISABLE KEYS */;
+INSERT INTO `giao_vien_chu_nhiem` VALUES (1,4,17),(2,3,18);
 /*!40000 ALTER TABLE `giao_vien_chu_nhiem` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -150,6 +152,7 @@ CREATE TABLE `hoc_sinh` (
   `hoTen` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `gioiTinh` tinyint(1) NOT NULL,
   `ngaySinh` date NOT NULL,
+  `khoi` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `diaChi` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `SDT` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `eMail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -159,7 +162,7 @@ CREATE TABLE `hoc_sinh` (
   UNIQUE KEY `eMail` (`eMail`),
   KEY `maDsLop` (`maDsLop`),
   CONSTRAINT `hoc_sinh_ibfk_1` FOREIGN KEY (`maDsLop`) REFERENCES `danh_sach_lop` (`maDsLop`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -168,63 +171,8 @@ CREATE TABLE `hoc_sinh` (
 
 LOCK TABLES `hoc_sinh` WRITE;
 /*!40000 ALTER TABLE `hoc_sinh` DISABLE KEYS */;
-INSERT INTO `hoc_sinh` VALUES (1,'Tô Quốc Bình',1,'2009-02-21','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com',NULL),(2,'Trần Quốc Phong',1,'2008-10-30','Thành phố Hồ Chí Minh','0792821010','tqphong2004@gmail.com',NULL);
+INSERT INTO `hoc_sinh` VALUES (1,'Tô Quốc Bình',1,'2009-02-21','Khối 10','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com',17),(2,'Trần Quốc Phong',1,'2008-10-30','Khối 11','Thành phố Hồ Chí Minh','0123456789','tqphong2004@gmail.com',18),(3,'Nguyễn Sa Sa',0,'2009-01-23','Khối 10','Thành phố Hồ Chí Minh','0911342942','sa123@gmail.com',NULL);
 /*!40000 ALTER TABLE `hoc_sinh` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `khoi_lop`
---
-
-DROP TABLE IF EXISTS `khoi_lop`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `khoi_lop` (
-  `idKhoiLop` int NOT NULL AUTO_INCREMENT,
-  `tenKhoi` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`idKhoiLop`),
-  UNIQUE KEY `tenKhoi` (`tenKhoi`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `khoi_lop`
---
-
-LOCK TABLES `khoi_lop` WRITE;
-/*!40000 ALTER TABLE `khoi_lop` DISABLE KEYS */;
-INSERT INTO `khoi_lop` VALUES (1,'10'),(2,'11'),(3,'12');
-/*!40000 ALTER TABLE `khoi_lop` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `khoi_phong`
---
-
-DROP TABLE IF EXISTS `khoi_phong`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `khoi_phong` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `khoiLop_id` int NOT NULL,
-  `phongHoc_id` int NOT NULL,
-  `buoiHoc` enum('SANG','CHIEU') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `khoiLop_id` (`khoiLop_id`),
-  KEY `phongHoc_id` (`phongHoc_id`),
-  CONSTRAINT `khoi_phong_ibfk_1` FOREIGN KEY (`khoiLop_id`) REFERENCES `khoi_lop` (`idKhoiLop`),
-  CONSTRAINT `khoi_phong_ibfk_2` FOREIGN KEY (`phongHoc_id`) REFERENCES `phong_hoc` (`idPhongHoc`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `khoi_phong`
---
-
-LOCK TABLES `khoi_phong` WRITE;
-/*!40000 ALTER TABLE `khoi_phong` DISABLE KEYS */;
-INSERT INTO `khoi_phong` VALUES (1,1,1,'SANG'),(9,1,2,'SANG'),(10,2,3,'SANG'),(11,2,1,'CHIEU'),(12,3,2,'CHIEU'),(13,3,3,'CHIEU');
-/*!40000 ALTER TABLE `khoi_phong` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -295,10 +243,10 @@ DROP TABLE IF EXISTS `phong_hoc`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phong_hoc` (
   `idPhongHoc` int NOT NULL AUTO_INCREMENT,
-  `tenPhong` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tenPhong` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`idPhongHoc`),
   UNIQUE KEY `tenPhong` (`tenPhong`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -307,7 +255,7 @@ CREATE TABLE `phong_hoc` (
 
 LOCK TABLES `phong_hoc` WRITE;
 /*!40000 ALTER TABLE `phong_hoc` DISABLE KEYS */;
-INSERT INTO `phong_hoc` VALUES (1,'Phòng 101'),(2,'Phòng 102'),(3,'Phòng 201');
+INSERT INTO `phong_hoc` VALUES (1,'A101'),(2,'A102'),(3,'A103'),(4,'A104'),(5,'A105'),(6,'B101'),(7,'B102'),(8,'B103'),(9,'B104'),(10,'B105'),(11,'C101'),(12,'C102'),(13,'C103'),(14,'C104'),(15,'C105');
 /*!40000 ALTER TABLE `phong_hoc` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -320,4 +268,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-05 17:48:13
+-- Dump completed on 2024-12-06 18:18:28

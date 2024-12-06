@@ -10,6 +10,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:%s@localhost/manad
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["MIN_AGE"]=15
 app.config["MAX_AGE"]=20
+app.config["SI_SO"]=2
 
 db = SQLAlchemy(app)
 login = LoginManager(app=app)
