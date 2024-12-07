@@ -5,6 +5,8 @@ from sqlalchemy.testing.plugin.plugin_base import config
 
 from app import app, db, dao, login
 from datetime import date, datetime
+
+from app.admin import DanhSachLopView
 from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienChuNhiem, GiaoVien
 from flask_login import login_user, logout_user
 
@@ -26,7 +28,7 @@ def login_process():
         nv = dao.auth_user(taikhoan=taiKhoan, matkhau=matKhau)
         if nv and nv.get_VaiTro() == UserRole.NHANVIENTIEPNHAN:
             login_user(nv)
-            return redirect('/nhan-vien-tiep-nhan')
+            return redirect('/nhan-vien')
         elif nv and nv.get_VaiTro() == UserRole.NGUOIQUANTRI:
             login_user(nv)
             return redirect('/admin')
@@ -35,9 +37,9 @@ def login_process():
     return render_template('layout/login.html', err_msg=err_msg)
 
 
-@app.route('/nhan-vien-tiep-nhan')
+@app.route('/nhan-vien')
 def dashboard():
-    return render_template('layout/nhanvientiepnhan.html')
+    return render_template('layout/nhan_vien.html')
 
 
 @app.route('/logout', methods=['get', 'post'])
@@ -72,7 +74,7 @@ def kiem_tra_tuoi():
             return render_template('layout/nhap_thong_tin_hoc_sinh.html', ngay_sinh=ngay_sinh)
         else:
             flash(f"Tuổi không phù hợp: {tuoi} tuổi!!!", "warning")
-            return redirect('/nhan-vien-tiep-nhan')
+            return redirect('/nhan-vien')
     return "Không nhận được thông tin ngày sinh!"
 
 
@@ -102,12 +104,98 @@ def luu_hoc_sinh():
     db.session.commit()
 
     flash("Học sinh đã được lưu thành công!", "success")
-    return redirect("/nhan-vien-tiep-nhan")
+    return redirect("/nhan-vien")
 
 
 @app.route('/danh-sach-lop')
 def show_ds_lop():
-    return render_template('layout/nhanvientiepnhan.html')
+    dsLop = DanhSachLop.query.filter(DanhSachLop.active==True)
+    return render_template('layout/danh_sach_lop.html',danh_sach_lop=dsLop)
+
+@app.route('/danh-sach-lop/sua/<int:id>', methods=['GET', 'POST'])
+def sua_ds_lop(id):
+    lop = DanhSachLop.query.filter(DanhSachLop.maDsLop == id).first()
+
+    # Lấy danh sách phòng học chưa được chọn
+    list_phong = PhongHoc.query.all()
+    list_phong_da_chon = {l.idPhongHoc for l in DanhSachLop.query.filter(DanhSachLop.idPhongHoc != None)}
+    list_phong = [phong for phong in list_phong if phong.idPhongHoc not in list_phong_da_chon or phong.idPhongHoc == lop.idPhongHoc]
+
+    list_hs = {hs for hs in HocSinh.query.filter(HocSinh.maDsLop==lop.maDsLop)}
+
+    if request.method == 'POST':
+        try:
+            # Cập nhật thông tin
+            lop.tenLop = request.form.get("tenLop")
+            lop.idPhongHoc = int(request.form.get("phongHoc"))
+            db.session.commit()
+            flash("Cập nhật thông tin lớp thành công", "success")
+            return redirect('/danh-sach-lop')  # Chuyển về trang danh sách lớp
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Lỗi khi lưu dữ liệu: {str(e)}", "danger")
+            return redirect(request.url)
+
+    return render_template('layout/sua_lop.html', lop=lop, danh_sach_phong=list_phong,danh_sach_hoc_sinh=list_hs)
+
+@app.route('/them-hoc-sinh/<int:id>', methods=['GET', 'POST'])
+def them_hoc_sinh(id):
+    lop = DanhSachLop.query.filter(DanhSachLop.maDsLop == id).first()
+
+    ds_hs_chua_lop = HocSinh.query.filter(HocSinh.maDsLop==None)
+
+    if request.method == 'POST':
+        print(request.form)
+        try:
+            list_hs_ids = request.form.getlist("hocSinh")  # Lấy danh sách ID học sinh
+            if not list_hs_ids:
+                flash("Vui lòng chọn ít nhất một học sinh!", "danger")
+                return redirect(request.url)
+
+            si_so_hien_tai = HocSinh.query.filter(HocSinh.maDsLop == id).count()
+            so_hoc_sinh_them = len(list_hs_ids)
+            si_so_moi = si_so_hien_tai + so_hoc_sinh_them
+
+            if si_so_moi > app.config["SI_SO"]:
+                flash("Không thể thêm vì vượt quá sĩ số lớp!", "danger")
+                return redirect(request.url)
+            else:
+                lop.siSo = si_so_moi
+                db.session.add(lop)
+                db.session.commit()
+
+
+            for hoc_sinh_id in list_hs_ids:
+                hoc_sinh = HocSinh.query.get(hoc_sinh_id)
+                hoc_sinh.maDsLop = id
+                db.session.add(hoc_sinh)
+                db.session.commit()
+
+
+            flash(f"Đã thêm {so_hoc_sinh_them} học sinh vào lớp!", "success")
+            return redirect(f'/danh-sach-lop/sua/{id}')
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Lỗi khi thêm học sinh: {str(e)}", "danger")
+            return redirect(request.url)
+
+    return render_template('layout/them_hoc_sinh.html', danh_sach_hoc_sinh=ds_hs_chua_lop, lop=lop)
+
+@app.route('/xoa-hoc-sinh', methods=['POST'])
+def xoa_hoc_sinh():
+    id_hoc_sinh = request.form.get('idHocSinh')  # Lấy ID từ form
+    if id_hoc_sinh:
+        print(f"ID học sinh nhận được: {id_hoc_sinh}")  # In ra log kiểm tra
+        # Kiểm tra và xóa học sinh khỏi database
+        hoc_sinh = HocSinh.query.filter_by(idHocSinh=id_hoc_sinh).first()
+        if hoc_sinh:
+            db.session.delete(hoc_sinh)
+            db.session.commit()
+            flash('Xóa học sinh thành công!', 'success')
+        else:
+            flash('Không tìm thấy học sinh!', 'danger')
+        return redirect(url_for('layout/danh_sach_lop'))
+    return
 
 
 @app.route('/tao-danh-sach-lop')

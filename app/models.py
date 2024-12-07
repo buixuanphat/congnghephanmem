@@ -1,4 +1,5 @@
 from datetime import date
+from email.policy import default
 
 from app import db, app
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, BOOLEAN, Date, Enum, UniqueConstraint
@@ -129,6 +130,7 @@ class DanhSachLop(db.Model):
     giaoVienChuNhiem_id = Column(Integer, ForeignKey(GiaoVien.idGiaoVien), nullable=True)
     siSo = db.Column(Integer, nullable=False)
     hocKy_id = Column(Integer, ForeignKey(HocKy.idHocKy), nullable=False)
+    active = Column(Boolean, default=True)
 
     giaoVienChuNhiem = relationship(GiaoVien, backref='lop')
     hocKy = relationship(HocKy, backref='lop')

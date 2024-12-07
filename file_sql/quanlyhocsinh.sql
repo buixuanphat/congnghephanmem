@@ -29,14 +29,16 @@ CREATE TABLE `danh_sach_lop` (
   `giaoVienChuNhiem_id` int DEFAULT NULL,
   `siSo` int NOT NULL,
   `hocKy_id` int NOT NULL,
+  `active` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`maDsLop`),
   UNIQUE KEY `idPhongHoc` (`idPhongHoc`),
+  UNIQUE KEY `tenLop` (`tenLop`),
   KEY `giaoVienChuNhiem_id` (`giaoVienChuNhiem_id`),
   KEY `hocKy_id` (`hocKy_id`),
   CONSTRAINT `danh_sach_lop_ibfk_1` FOREIGN KEY (`idPhongHoc`) REFERENCES `phong_hoc` (`idPhongHoc`),
   CONSTRAINT `danh_sach_lop_ibfk_2` FOREIGN KEY (`giaoVienChuNhiem_id`) REFERENCES `giao_vien` (`idGiaoVien`),
   CONSTRAINT `danh_sach_lop_ibfk_3` FOREIGN KEY (`hocKy_id`) REFERENCES `hoc_ky` (`idHocKy`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +47,7 @@ CREATE TABLE `danh_sach_lop` (
 
 LOCK TABLES `danh_sach_lop` WRITE;
 /*!40000 ALTER TABLE `danh_sach_lop` DISABLE KEYS */;
-INSERT INTO `danh_sach_lop` VALUES (17,NULL,'10',4,1,2),(18,NULL,'11',3,1,2);
+INSERT INTO `danh_sach_lop` VALUES (1,1,'10A1',1,2,2,1),(2,3,'11A1',2,2,2,1);
 /*!40000 ALTER TABLE `danh_sach_lop` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -111,7 +113,7 @@ CREATE TABLE `giao_vien_chu_nhiem` (
 
 LOCK TABLES `giao_vien_chu_nhiem` WRITE;
 /*!40000 ALTER TABLE `giao_vien_chu_nhiem` DISABLE KEYS */;
-INSERT INTO `giao_vien_chu_nhiem` VALUES (1,4,17),(2,3,18);
+INSERT INTO `giao_vien_chu_nhiem` VALUES (1,1,1),(2,2,2);
 /*!40000 ALTER TABLE `giao_vien_chu_nhiem` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -162,7 +164,7 @@ CREATE TABLE `hoc_sinh` (
   UNIQUE KEY `eMail` (`eMail`),
   KEY `maDsLop` (`maDsLop`),
   CONSTRAINT `hoc_sinh_ibfk_1` FOREIGN KEY (`maDsLop`) REFERENCES `danh_sach_lop` (`maDsLop`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -171,7 +173,7 @@ CREATE TABLE `hoc_sinh` (
 
 LOCK TABLES `hoc_sinh` WRITE;
 /*!40000 ALTER TABLE `hoc_sinh` DISABLE KEYS */;
-INSERT INTO `hoc_sinh` VALUES (1,'Tô Quốc Bình',1,'2009-02-21','Khối 10','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com',17),(2,'Trần Quốc Phong',1,'2008-10-30','Khối 11','Thành phố Hồ Chí Minh','0123456789','tqphong2004@gmail.com',18),(3,'Nguyễn Sa Sa',0,'2009-01-23','Khối 10','Thành phố Hồ Chí Minh','0911342942','sa123@gmail.com',NULL);
+INSERT INTO `hoc_sinh` VALUES (1,'Tô Quốc Bình',1,'2009-02-21','Khối 10','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com',1),(2,'Trần Quốc Phong',1,'2008-10-30','Khối 11','Thành phố Hồ Chí Minh','0911342943','tqphong2004@gmail.com',2),(4,'Nguyễn Đăng Đăng',1,'2008-04-05','Khối 11','Hà Nội','0564822138','dangdang123@gmail.com',2);
 /*!40000 ALTER TABLE `hoc_sinh` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -268,4 +270,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-06 18:18:28
+-- Dump completed on 2024-12-07 18:21:10
