@@ -26,20 +26,31 @@ def login_process():
         matKhau = request.form['matKhau']
 
         nv = dao.auth_user(taikhoan=taiKhoan, matkhau=matKhau)
+        print(nv)
         if nv and nv.get_VaiTro() == UserRole.NHANVIENTIEPNHAN:
             login_user(nv)
             return redirect('/nhan-vien')
         elif nv and nv.get_VaiTro() == UserRole.NGUOIQUANTRI:
             login_user(nv)
             return redirect('/admin')
-        else:
-            err_msg = "Sai tài khoản/ mật khẩu"
+
+            # Kiểm tra tài khoản giáo viên
+        gv = dao.auth_giao_vien(taiKhoan, matKhau)
+        if gv:
+            login_user(gv)
+            return redirect('/giao-vien')
+
+        err_msg = "Sai tài khoản/ mật khẩu"
     return render_template('layout/login.html', err_msg=err_msg)
 
 
 @app.route('/nhan-vien')
 def dashboard():
     return render_template('layout/nhan_vien.html')
+
+@app.route('/giao-vien')
+def giao_vien_dashboard():
+    return render_template('layout/giao_vien.html')  # Tạo file giao diện cho giáo viên
 
 
 @app.route('/logout', methods=['get', 'post'])
@@ -51,6 +62,7 @@ def logout_process():
 @login.user_loader
 def load_user(user_id):
     return dao.get_nhan_vien_by_id(user_id)
+
 
 
 # @app.before_request
