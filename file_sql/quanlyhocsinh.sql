@@ -173,7 +173,7 @@ CREATE TABLE `hoc_sinh` (
 
 LOCK TABLES `hoc_sinh` WRITE;
 /*!40000 ALTER TABLE `hoc_sinh` DISABLE KEYS */;
-INSERT INTO `hoc_sinh` VALUES (1,'Tô Quốc Bình',1,'2009-02-21','Khối 10','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com',1),(2,'Trần Quốc Phong',1,'2008-10-30','Khối 11','Thành phố Hồ Chí Minh','0911342943','tqphong2004@gmail.com',2),(4,'Nguyễn Đăng Đăng',1,'2008-04-05','Khối 11','Hà Nội','0564822138','dangdang123@gmail.com',2);
+INSERT INTO `hoc_sinh` VALUES (1,'Tô Quốc Bình',1,'2009-02-21','Khối 10','Thành phố Hồ Chí Minh','0762590966','toquocbinh2102@gmail.com',1),(2,'Trần Quốc Phong',1,'2008-10-30','Khối 11','Thành phố Hồ Chí Minh','0911342943','tqphong2004@gmail.com',2),(4,'Nguyễn Đăng Đăng',1,'2008-04-05','Khối 11','Hà Nội','0564822138','dangdang123@gmail.com',1);
 /*!40000 ALTER TABLE `hoc_sinh` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -270,4 +270,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-07 18:21:10
+-- Dump completed on 2024-12-08  7:16:34

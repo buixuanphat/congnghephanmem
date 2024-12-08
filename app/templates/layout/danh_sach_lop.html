@@ -29,9 +29,9 @@
         <thead class="table-dark">
         <tr>
             <th>Tên lớp</th>
-            <th>Giáo viên chủ nhiệm</th>
             <th>Phòng học</th>
             <th>Sĩ số</th>
+             <th>Giáo viên chủ nhiệm</th>
             <th>Hành động</th>
         </tr>
         </thead>
@@ -39,9 +39,9 @@
         {% for lop in danh_sach_lop %}
         <tr>
             <td>{{ lop.tenLop }}</td>
-            <td>{{ lop.giaoVienChuNhiem.hoTen if lop.giaoVienChuNhiem else 'Chưa gán' }}</td>
             <td>{{ lop.phongHoc.tenPhong if lop.phongHoc else 'Chưa gán' }}</td>
             <td>{{ lop.siSo }}</td>
+            <td>{{ lop.giaoVienChuNhiem.hoTen if lop.giaoVienChuNhiem else 'Chưa gán' }}</td>
             <td>
                 <a methods="POST" href="/danh-sach-lop/sua/{{ lop.maDsLop }}" class="btn btn-warning btn-sm">Sửa</a>
             </td>

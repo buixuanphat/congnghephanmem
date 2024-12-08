@@ -109,8 +109,9 @@ def luu_hoc_sinh():
 
 @app.route('/danh-sach-lop')
 def show_ds_lop():
-    dsLop = DanhSachLop.query.filter(DanhSachLop.active==True)
-    return render_template('layout/danh_sach_lop.html',danh_sach_lop=dsLop)
+    dsLop = DanhSachLop.query.filter(DanhSachLop.active == True)
+    return render_template('layout/danh_sach_lop.html', danh_sach_lop=dsLop)
+
 
 @app.route('/danh-sach-lop/sua/<int:id>', methods=['GET', 'POST'])
 def sua_ds_lop(id):
@@ -119,9 +120,10 @@ def sua_ds_lop(id):
     # Lấy danh sách phòng học chưa được chọn
     list_phong = PhongHoc.query.all()
     list_phong_da_chon = {l.idPhongHoc for l in DanhSachLop.query.filter(DanhSachLop.idPhongHoc != None)}
-    list_phong = [phong for phong in list_phong if phong.idPhongHoc not in list_phong_da_chon or phong.idPhongHoc == lop.idPhongHoc]
+    list_phong = [phong for phong in list_phong if
+                  phong.idPhongHoc not in list_phong_da_chon or phong.idPhongHoc == lop.idPhongHoc]
 
-    list_hs = {hs for hs in HocSinh.query.filter(HocSinh.maDsLop==lop.maDsLop)}
+    list_hs = {hs for hs in HocSinh.query.filter(HocSinh.maDsLop == lop.maDsLop)}
 
     if request.method == 'POST':
         try:
@@ -136,13 +138,14 @@ def sua_ds_lop(id):
             flash(f"Lỗi khi lưu dữ liệu: {str(e)}", "danger")
             return redirect(request.url)
 
-    return render_template('layout/sua_lop.html', lop=lop, danh_sach_phong=list_phong,danh_sach_hoc_sinh=list_hs)
+    return render_template('layout/sua_lop.html', lop=lop, danh_sach_phong=list_phong, danh_sach_hoc_sinh=list_hs)
+
 
 @app.route('/them-hoc-sinh/<int:id>', methods=['GET', 'POST'])
 def them_hoc_sinh(id):
     lop = DanhSachLop.query.filter(DanhSachLop.maDsLop == id).first()
 
-    ds_hs_chua_lop = HocSinh.query.filter(HocSinh.maDsLop==None)
+    ds_hs_chua_lop = HocSinh.query.filter(HocSinh.maDsLop == None)
 
     if request.method == 'POST':
         print(request.form)
@@ -164,13 +167,11 @@ def them_hoc_sinh(id):
                 db.session.add(lop)
                 db.session.commit()
 
-
             for hoc_sinh_id in list_hs_ids:
                 hoc_sinh = HocSinh.query.get(hoc_sinh_id)
                 hoc_sinh.maDsLop = id
                 db.session.add(hoc_sinh)
                 db.session.commit()
-
 
             flash(f"Đã thêm {so_hoc_sinh_them} học sinh vào lớp!", "success")
             return redirect(f'/danh-sach-lop/sua/{id}')
@@ -181,6 +182,7 @@ def them_hoc_sinh(id):
 
     return render_template('layout/them_hoc_sinh.html', danh_sach_hoc_sinh=ds_hs_chua_lop, lop=lop)
 
+
 @app.route('/xoa-hoc-sinh', methods=['POST'])
 def xoa_hoc_sinh():
     id_hoc_sinh = request.form.get('idHocSinh')  # Lấy ID từ form
@@ -189,13 +191,14 @@ def xoa_hoc_sinh():
         # Kiểm tra và xóa học sinh khỏi database
         hoc_sinh = HocSinh.query.filter_by(idHocSinh=id_hoc_sinh).first()
         if hoc_sinh:
-            db.session.delete(hoc_sinh)
+            hoc_sinh.maDsLop = None  # Gỡ học sinh khỏi lớp
             db.session.commit()
-            flash('Xóa học sinh thành công!', 'success')
+            flash('Đã xóa học sinh khỏi danh sách lớp thành công!', 'success')
         else:
             flash('Không tìm thấy học sinh!', 'danger')
-        return redirect(url_for('layout/danh_sach_lop'))
-    return
+        return redirect(url_for('show_ds_lop'))  # Chuyển hướng về danh sách lớp
+    flash('Không nhận được ID học sinh để xóa!', 'danger')
+    return redirect(url_for('show_ds_lop'))
 
 
 @app.route('/tao-danh-sach-lop')
@@ -207,7 +210,6 @@ def create_auto_classes():
             flash("Không có học sinh nào để tạo lớp!", "error")
             return redirect('/admin')
 
-
         # Nhóm học sinh theo khối
         grade_groups = {
             "10": [],
@@ -215,13 +217,12 @@ def create_auto_classes():
             "12": []
         }
         for student in students:
-            if student.khoi=="Khối 10":
+            if student.khoi == "Khối 10":
                 grade_groups["10"].append(student)
-            elif student.khoi=="Khối 11":
+            elif student.khoi == "Khối 11":
                 grade_groups["11"].append(student)
-            elif student.khoi=="Khối 12":
+            elif student.khoi == "Khối 12":
                 grade_groups["12"].append(student)
-
 
         # Lấy học kỳ hiện tại
         hoc_ky = HocKy.query.order_by(HocKy.idHocKy.desc()).first()
@@ -279,6 +280,7 @@ def create_auto_classes():
         flash(f"Lỗi xảy ra khi tạo danh sách lớp: {str(e)}", "error")
 
     return redirect('/admin')
+
 
 if __name__ == '__main__':
     from app import admin
