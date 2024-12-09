@@ -89,15 +89,15 @@ class GiaoVien(db.Model):
         return str(self.idGiaoVien)
 
 
-class GiaoVienChuNhiem(db.Model):
-    __tablename__ = 'giao_vien_chu_nhiem'
-    idGiaoVienCN = Column(Integer, primary_key=True,autoincrement=True)
+class GiaoVienDayHoc(db.Model):
+    __tablename__ = 'giao_vien_day_hoc'
+    idGiaoVienDayHoc = Column(Integer, primary_key=True,autoincrement=True)
     idGiaoVien = Column(Integer, ForeignKey(GiaoVien.idGiaoVien),nullable=True)
     idDsLop = Column(Integer, ForeignKey('danh_sach_lop.maDsLop', ondelete="CASCADE"), nullable=True)
 
     # Quan hệ với DanhSachLop
-    giaoVien = relationship(GiaoVien, backref="chuNhiemLop")
-    lopChuNhiem = relationship('DanhSachLop', backref='giaoVienPhuTrach')
+    giaoVien = relationship(GiaoVien, backref="dayLop")
+    lopDay = relationship('DanhSachLop', backref='giaoVienPhuTrach')
 
 
 
@@ -142,7 +142,9 @@ class DanhSachLop(db.Model):
     maDsLop = Column(Integer, primary_key=True, autoincrement=True)
     idPhongHoc = Column(Integer, ForeignKey(PhongHoc.idPhongHoc),unique=True, nullable=True)
     tenLop = Column(String(50),unique=True,nullable=True)
+    khoi = Column(String(50), nullable=False)
     giaoVienChuNhiem_id = Column(Integer, ForeignKey(GiaoVien.idGiaoVien), nullable=True)
+    siSoHienTai = db.Column(Integer, nullable=False)
     siSo = db.Column(Integer, nullable=False)
     hocKy_id = Column(Integer, ForeignKey(HocKy.idHocKy), nullable=False)
     active = Column(Boolean, default=True)
@@ -153,8 +155,8 @@ class DanhSachLop(db.Model):
     phongHoc = relationship(PhongHoc, backref='danhSachLops')
 
     # Thêm quan hệ với GiaoVienChuNhiem
-    giaoVienChuNhiems = relationship(
-        'GiaoVienChuNhiem',
+    giaoVienDayHocs = relationship(
+        'GiaoVienDayHoc',
         backref='lop',
         cascade="all, delete",
         lazy=True

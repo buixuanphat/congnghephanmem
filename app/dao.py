@@ -1,4 +1,4 @@
-from app.models import NhanVien, GiaoVien, GiaoVienChuNhiem, HocKy, HocSinh, PhongHoc, DanhSachLop
+from app.models import NhanVien, GiaoVien, GiaoVienDayHoc, HocKy, HocSinh, PhongHoc, DanhSachLop
 from app import app
 import  hashlib
 

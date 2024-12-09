@@ -1,13 +1,13 @@
 from random import choice
 from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
-from sqlalchemy import Nullable
+from sqlalchemy import Nullable, and_
 from sqlalchemy.testing.plugin.plugin_base import config
 
 from app import app, db, dao, login
 from datetime import date, datetime
 
 from app.admin import DanhSachLopView
-from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienChuNhiem, GiaoVien
+from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienDayHoc, GiaoVien, MonHoc
 from flask_login import login_user, logout_user
 
 app.secret_key = 'secret_key'  # Khóa bảo mật cho session
@@ -157,7 +157,11 @@ def sua_ds_lop(id):
 def them_hoc_sinh(id):
     lop = DanhSachLop.query.filter(DanhSachLop.maDsLop == id).first()
 
-    ds_hs_chua_lop = HocSinh.query.filter(HocSinh.maDsLop == None)
+    ds_hs_chua_lop = HocSinh.query.filter(and_(
+            HocSinh.maDsLop == None,
+            HocSinh.khoi == lop.khoi
+        )
+    ).all()
 
     if request.method == 'POST':
         print(request.form)
@@ -171,7 +175,7 @@ def them_hoc_sinh(id):
             so_hoc_sinh_them = len(list_hs_ids)
             si_so_moi = si_so_hien_tai + so_hoc_sinh_them
 
-            if si_so_moi > app.config["SI_SO"]:
+            if si_so_moi > lop.siSo:
                 flash("Không thể thêm vì vượt quá sĩ số lớp!", "danger")
                 return redirect(request.url)
             else:
@@ -241,55 +245,77 @@ def create_auto_classes():
         if not hoc_ky:
             return jsonify({"error": "Học kỳ không tồn tại"}), 400
 
-        # Lấy danh sách giáo viên chưa gán vào lớp
-        giao_vien_list = GiaoVien.query.all()
-        giao_vien_da_gan = {gv.idGiaoVien for gv in GiaoVienChuNhiem.query.all()}
-        giao_vien_list = [gv for gv in giao_vien_list if gv.idGiaoVien not in giao_vien_da_gan]
-        if not giao_vien_list:
-            return jsonify({"error": "Không có giáo viên để gán"}), 400
+        # Lấy danh sách giáo viên và phân loại theo môn học
+        giao_vien_all = GiaoVien.query.all()
+        giao_vien_by_mon = {mon.idMonHoc: [] for mon in MonHoc.query.all()}
+        for gv in giao_vien_all:
+            giao_vien_by_mon[gv.idMonHoc].append(gv)
 
-        # Xử lý tạo lớp cho từng nhóm tuổi
+        giao_vien_kha_dung = GiaoVien.query.all()
+        giao_vien_da_chu_nhiem = {gv_cn.giaoVienChuNhiem_id for gv_cn in DanhSachLop.query.filter(DanhSachLop.giaoVienChuNhiem_id != None)}
+        giao_vien_kha_dung = [gv for gv in giao_vien_kha_dung if gv.idGiaoVien not in giao_vien_da_chu_nhiem]
+
+
+        # Xử lý từng khối lớp
         for khoi, group_students in grade_groups.items():
             batch_size = app.config["SI_SO"]  # Số lượng học sinh mỗi lớp
             for i in range(0, len(group_students), batch_size):
                 class_students = group_students[i:i + batch_size]
 
-                # Chọn giáo viên ngẫu nhiên
-                giao_vien_CN = choice(giao_vien_list)
+                # Gán giáo viên chủ nhiệm ngẫu nhiên
+                gv_chu_nhiem = choice(giao_vien_kha_dung)
 
-                # Tạo danh sách lớp mới
+                # Tạo lớp mới
                 new_class = DanhSachLop(
-                    # Gán phòng học
-                    tenLop=f"{khoi}",
-                    giaoVienChuNhiem_id=giao_vien_CN.idGiaoVien,
-                    siSo=len(class_students),
-                    hocKy_id=hoc_ky.idHocKy  # Học kỳ hiện tại
+                    tenLop=f"{khoi}A{i + 1}",
+                    khoi = f"Khối {khoi}",
+                    giaoVienChuNhiem_id=gv_chu_nhiem.idGiaoVien,
+                    siSoHienTai=len(class_students),
+                    siSo=app.config["SI_SO"],
+                    hocKy_id=hoc_ky.idHocKy
                 )
                 db.session.add(new_class)
                 db.session.commit()
 
-                # Thêm giáo viên chủ nhiệm vào bảng GiaoVienChuNhiem
-                giao_vien_chu_nhiem = GiaoVienChuNhiem(
-                    idGiaoVien=giao_vien_CN.idGiaoVien,
+                # Gán giáo viên chủ nhiệm vào bảng GiaoVienChuNhiem
+                giao_vien_day_hoc = GiaoVienDayHoc(
+                    idGiaoVien=gv_chu_nhiem.idGiaoVien,
                     idDsLop=new_class.maDsLop
                 )
-                db.session.add(giao_vien_chu_nhiem)
+                db.session.add(giao_vien_day_hoc)
                 db.session.commit()
 
-                # Loại giáo viên vừa gán khỏi danh sách giáo viên khả dụng
-                giao_vien_list.remove(giao_vien_CN)
 
-                # Gán học sinh vào lớp vừa tạo
+
+                # Xác định các môn học còn thiếu
+                missing_subjects = [mon for mon in MonHoc.query.all() if mon.idMonHoc != gv_chu_nhiem.idMonHoc]
+
+                # Gán giáo viên cho các môn học còn thiếu
+                for mon in missing_subjects:
+                    available_gvs = giao_vien_by_mon[mon.idMonHoc]
+                    if available_gvs:
+                        gv = choice(available_gvs)
+                        # Gán giáo viên dạy môn này cho lớp
+                        new_class.giaoVienDayHocs.append(GiaoVienDayHoc(
+                            idGiaoVien=gv.idGiaoVien,
+                            idDsLop=new_class.maDsLop
+                        ))
+                        db.session.commit()
+
+                # Ghi nhận giáo viên đã làm chủ nhiệm
+                giao_vien_kha_dung.remove(gv_chu_nhiem)
+
+                # Gán học sinh vào lớp
                 for student in class_students:
                     student.maDsLop = new_class.maDsLop
                     db.session.add(student)
 
         db.session.commit()
-        flash("Danh sách lớp đã được tạo thành công theo độ tuổi!", "success")
+        flash("Danh sách lớp đã được tạo thành công!", "success")
 
     except Exception as e:
         db.session.rollback()
-        flash(f"Lỗi xảy ra khi tạo danh sách lớp: {str(e)}", "error")
+        flash(f"Lỗi khi tạo danh sách lớp: {str(e)}", "error")
 
     return redirect('/admin')
 

@@ -5,7 +5,7 @@ from flask_admin import Admin, BaseView, expose
 from app import app, db
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, logout_user
-from app.models import NhanVien, HocSinh, DanhSachLop, GiaoVienChuNhiem, MonHoc, GiaoVien, UserRole, PhongHoc
+from app.models import NhanVien, HocSinh, DanhSachLop, GiaoVienDayHoc, MonHoc, GiaoVien, UserRole, PhongHoc
 
 admin = Admin(app=app, name='Người Quản Trị', template_mode='bootstrap4')
 
@@ -59,7 +59,7 @@ admin.add_view(ModelView(MonHoc, db.session))
 admin.add_view(ModelView(PhongHoc, db.session))
 admin.add_view(ModelView(NhanVien, db.session))
 admin.add_view(GiaoVienView(GiaoVien, db.session))
-admin.add_view(ModelView(GiaoVienChuNhiem, db.session))
+admin.add_view(ModelView(GiaoVienDayHoc, db.session))
 admin.add_view(ModelView(HocSinh, db.session))
 admin.add_view(DanhSachLopView(DanhSachLop, db.session))
 
