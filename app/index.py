@@ -335,82 +335,124 @@ def danh_sach_lop_day():
 
     return render_template('/layout/danh_sach_lop_gv.html', danh_sach_lop=danh_sach_lop)
 
+@app.route('/danh-sach-lop-chu-nhiem')
+def danh_sach_lop_chu_nhiem():
+    # Kiểm tra giáo viên có chủ nhiệm lớp nào không
+    lop_chu_nhiem = DanhSachLop.query.filter_by(giaoVienChuNhiem_id=current_user.idGiaoVien).first()
+
+    if lop_chu_nhiem:
+        # Lấy danh sách học sinh trong lớp chủ nhiệm
+        danh_sach_hoc_sinh = HocSinh.query.filter_by(maDsLop=lop_chu_nhiem.maDsLop).all()
+
+        # Lấy bảng điểm theo môn và loại điểm
+        bang_diem = {}
+        for hs in danh_sach_hoc_sinh:
+            bang_diem[hs.idHocSinh] = {
+                "15p": {},
+                "1_tiet": {},
+                "thi": {}
+            }
+            diem_cua_hoc_sinh = BangDiem.query.filter_by(hocSinh_id=hs.idHocSinh).all()
+            for diem in diem_cua_hoc_sinh:
+                loai_diem = diem.loai_diem
+                ten_mon = diem.mon_hoc.tenMonHoc
+                bang_diem[hs.idHocSinh][loai_diem][ten_mon] = diem.diem
+
+        return render_template(
+            'layout/danh_sach_lop_chu_nhiem.html',
+            lop=lop_chu_nhiem,
+            danh_sach_hoc_sinh=danh_sach_hoc_sinh,
+            bang_diem=bang_diem
+        )
+    else:
+        # Nếu không chủ nhiệm lớp nào
+        return render_template('layout/khong_chu_nhiem.html')
+
+
 
 @app.route('/xem-lop/<int:lop_id>')
 def xem_lop(lop_id):
     lop = DanhSachLop.query.get(lop_id)
     danh_sach_hoc_sinh = HocSinh.query.filter(HocSinh.maDsLop == lop_id).all()
 
-    for hoc_sinh in danh_sach_hoc_sinh:
-        # Lấy danh sách điểm 15 phút
-        diem_15p = [d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '15p']
-        # Lấy danh sách điểm 1 tiết
-        diem_1_tiet = [d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '1_tiet']
-        # Lấy điểm thi
-        diem_thi = next((d.diem for d in hoc_sinh.bang_diem if d.loai_diem == 'thi'), None)
+    mon_hoc_id = current_user.idMonHoc  # Giáo viên chỉ xem điểm của môn học mình dạy
 
-        # Tính điểm trung bình 15 phút
-        hoc_sinh.tb_15p = round(sum(diem_15p) / len(diem_15p), 2) if diem_15p else None
-        # Tính điểm trung bình 1 tiết
-        hoc_sinh.tb_1_tiet = round(sum(diem_1_tiet) / len(diem_1_tiet), 2) if diem_1_tiet else None
-        # Điểm thi (nếu có)
-        hoc_sinh.diem_thi = diem_thi
-        # Tính điểm trung bình chung
-        if hoc_sinh.tb_15p is not None and hoc_sinh.tb_1_tiet is not None and hoc_sinh.diem_thi is not None:
+    for hoc_sinh in danh_sach_hoc_sinh:
+        hoc_sinh.tb_15p = next(
+            (d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '15p' and d.monHoc_id == mon_hoc_id), None)
+        hoc_sinh.tb_1_tiet = next(
+            (d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '1_tiet' and d.monHoc_id == mon_hoc_id), None)
+        hoc_sinh.diem_thi = next(
+            (d.diem for d in hoc_sinh.bang_diem if d.loai_diem == 'thi' and d.monHoc_id == mon_hoc_id), None)
+
+        if hoc_sinh.tb_15p and hoc_sinh.tb_1_tiet and hoc_sinh.diem_thi:
             hoc_sinh.diem_trung_binh = round(
-                ((hoc_sinh.tb_15p * 1) + (hoc_sinh.tb_1_tiet * 2) + (hoc_sinh.diem_thi * 3)) / 6, 2
-            )
+                (hoc_sinh.tb_15p + hoc_sinh.tb_1_tiet * 2 + hoc_sinh.diem_thi * 3) / 6, 2)
         else:
             hoc_sinh.diem_trung_binh = None
 
     return render_template('/layout/danh_sach_hs.html', lop=lop, danh_sach_hoc_sinh=danh_sach_hoc_sinh)
 
+
+
 @app.route('/nhap-diem/<int:lop_id>', methods=['GET', 'POST'])
 def nhap_diem(lop_id):
     lop = DanhSachLop.query.get(lop_id)
+
+    # Lấy danh sách học sinh của lớp
     danh_sach_hoc_sinh = HocSinh.query.filter(HocSinh.maDsLop == lop_id).all()
 
-    # Lấy dữ liệu điểm đã lưu
+    # Lấy môn học và giáo viên hiện tại
+    giao_vien_id = current_user.idGiaoVien
+    mon_hoc_id = current_user.idMonHoc  # Mỗi giáo viên chỉ dạy một môn
+
+    # Kiểm tra xem giáo viên có dạy môn học này trong lớp không
+    giao_vien_day_lop = GiaoVienDayHoc.query.filter_by(idGiaoVien=giao_vien_id, idDsLop=lop_id).first()
+    if not giao_vien_day_lop:
+        flash("Bạn không có quyền nhập điểm cho lớp này!", "danger")
+        return redirect('/giao-vien')
+
+    # Lấy bảng điểm hiện tại của học sinh
     for hoc_sinh in danh_sach_hoc_sinh:
-        hoc_sinh.diem_15p = next((d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '15p'), '')
-        hoc_sinh.diem_1_tiet = next((d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '1_tiet'), '')
-        hoc_sinh.diem_thi = next((d.diem for d in hoc_sinh.bang_diem if d.loai_diem == 'thi'), '')
+        hoc_sinh.diem_15p = next((d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '15p' and d.monHoc_id == mon_hoc_id), '')
+        hoc_sinh.diem_1_tiet = next((d.diem for d in hoc_sinh.bang_diem if d.loai_diem == '1_tiet' and d.monHoc_id == mon_hoc_id), '')
+        hoc_sinh.diem_thi = next((d.diem for d in hoc_sinh.bang_diem if d.loai_diem == 'thi' and d.monHoc_id == mon_hoc_id), '')
 
     if request.method == 'POST':
         data = request.form
         diem_15p_list = data.getlist('diem_15p[]')
         diem_1_tiet_list = data.getlist('diem_1_tiet[]')
         diem_thi_list = data.getlist('diem_thi[]')
+
         # Lưu dữ liệu điểm
         for i, hoc_sinh in enumerate(danh_sach_hoc_sinh):
-            # Lấy giá trị từ form hoặc giữ nguyên nếu không có giá trị
             diem_15p = diem_15p_list[i] if i < len(diem_15p_list) and diem_15p_list[i] else None
             diem_1_tiet = diem_1_tiet_list[i] if i < len(diem_1_tiet_list) and diem_1_tiet_list[i] else None
             diem_thi = diem_thi_list[i] if i < len(diem_thi_list) and diem_thi_list[i] else None
 
             # Lưu điểm 15 phút
             if diem_15p:
-                bang_diem_15p = BangDiem.query.filter_by(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='15p').first()
+                bang_diem_15p = BangDiem.query.filter_by(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='15p', monHoc_id=mon_hoc_id).first()
                 if not bang_diem_15p:
-                    bang_diem_15p = BangDiem(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='15p', diem=diem_15p)
+                    bang_diem_15p = BangDiem(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='15p', diem=diem_15p, monHoc_id=mon_hoc_id, giaoVien_id=giao_vien_id)
                     db.session.add(bang_diem_15p)
                 else:
                     bang_diem_15p.diem = diem_15p
 
             # Lưu điểm 1 tiết
             if diem_1_tiet:
-                bang_diem_1_tiet = BangDiem.query.filter_by(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='1_tiet').first()
+                bang_diem_1_tiet = BangDiem.query.filter_by(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='1_tiet', monHoc_id=mon_hoc_id).first()
                 if not bang_diem_1_tiet:
-                    bang_diem_1_tiet = BangDiem(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='1_tiet', diem=diem_1_tiet)
+                    bang_diem_1_tiet = BangDiem(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='1_tiet', diem=diem_1_tiet, monHoc_id=mon_hoc_id, giaoVien_id=giao_vien_id)
                     db.session.add(bang_diem_1_tiet)
                 else:
                     bang_diem_1_tiet.diem = diem_1_tiet
 
             # Lưu điểm thi
             if diem_thi:
-                bang_diem_thi = BangDiem.query.filter_by(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='thi').first()
+                bang_diem_thi = BangDiem.query.filter_by(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='thi', monHoc_id=mon_hoc_id).first()
                 if not bang_diem_thi:
-                    bang_diem_thi = BangDiem(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='thi', diem=diem_thi)
+                    bang_diem_thi = BangDiem(hocSinh_id=hoc_sinh.idHocSinh, loai_diem='thi', diem=diem_thi, monHoc_id=mon_hoc_id, giaoVien_id=giao_vien_id)
                     db.session.add(bang_diem_thi)
                 else:
                     bang_diem_thi.diem = diem_thi
@@ -420,7 +462,8 @@ def nhap_diem(lop_id):
         flash("Điểm đã được lưu thành công!", "success")
         return redirect(f'/xem-lop/{lop_id}')
 
-    return render_template('layout/nhap_diem.html',lop=lop, danh_sach_hoc_sinh=danh_sach_hoc_sinh)
+    return render_template('layout/nhap_diem.html', lop=lop, danh_sach_hoc_sinh=danh_sach_hoc_sinh)
+
 
 
 if __name__ == '__main__':

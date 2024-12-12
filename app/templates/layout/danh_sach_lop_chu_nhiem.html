@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách lớp chủ nhiệm</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Danh sách lớp chủ nhiệm: {{ lop.tenLop }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2">Họ tên</th>
+                {% for mon in bang_diem[danh_sach_hoc_sinh[0].idHocSinh]["15p"].keys() %}
+                    <th colspan="3">{{ mon }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for mon in bang_diem[danh_sach_hoc_sinh[0].idHocSinh]["15p"].keys() %}
+                    <th>15p</th>
+                    <th>1 tiết</th>
+                    <th>Thi</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for hoc_sinh in danh_sach_hoc_sinh %}
+                <tr>
+                    <td>{{ hoc_sinh.hoTen }}</td>
+                    {% for mon in bang_diem[hoc_sinh.idHocSinh]["15p"].keys() %}
+                        <td>{{ bang_diem[hoc_sinh.idHocSinh]["15p"].get(mon, "") }}</td>
+                        <td>{{ bang_diem[hoc_sinh.idHocSinh]["1_tiet"].get(mon, "") }}</td>
+                        <td>{{ bang_diem[hoc_sinh.idHocSinh]["thi"].get(mon, "") }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

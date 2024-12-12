@@ -140,6 +140,11 @@ class BangDiem(db.Model):
     hocSinh_id = db.Column(db.Integer, db.ForeignKey('hoc_sinh.idHocSinh'), nullable=False)
     loai_diem = db.Column(db.String(20))  # Ví dụ: "15p", "1_tiet", "thi"
     diem = db.Column(db.Float)
+    monHoc_id = db.Column(db.Integer, db.ForeignKey('mon_hoc.idMonHoc'), nullable=False)  # Môn học
+    giaoVien_id = db.Column(db.Integer, db.ForeignKey('giao_vien.idGiaoVien'), nullable=False)  # Giáo viên
+
+    mon_hoc = relationship('MonHoc', backref='bang_diem')
+    giao_vien = relationship('GiaoVien', backref='bang_diem')
 
 class PhongHoc(db.Model):
     idPhongHoc = Column(Integer, primary_key=True, autoincrement=True)

@@ -10,6 +10,9 @@
     <p>Đây là giao diện dành cho giáo viên.</p>
     <ul>
         <li><a href="/danh-sach-lop-day">Danh sách lớp dạy</a></li>
+        {% if current_user.lop %}
+        <li><a href="/danh-sach-lop-chu-nhiem">Danh sách lớp chủ nhiệm</a></li>
+        {% endif %}
         <li><a href="/logout">Đăng xuất</a></li>
     </ul>
 </body>
