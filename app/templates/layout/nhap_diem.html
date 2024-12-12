@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập điểm</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { text-align: center; padding: 10px; border: 1px solid #ddd; }
+        button { padding: 5px 10px; border: none; border-radius: 5px; background-color: #4CAF50; color: white; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Nhập điểm</h1>
+
+    <form method="POST">
+        <table id="bang_diem">
+            <thead>
+                <tr>
+                    <th>Họ và tên</th>
+                    <th class="cot_15p">Điểm 15p
+                        <div class="controls">
+                            <button type="button" onclick="themCot('cot_15p', 5)">+</button>
+                            <button type="button" onclick="xoaCot('cot_15p', 1)">-</button>
+                        </div>
+                    </th>
+                    <th class="cot_1_tiet">Điểm 1 tiết
+                        <div class="controls">
+                            <button type="button" onclick="themCot('cot_1_tiet', 3)">+</button>
+                            <button type="button" onclick="xoaCot('cot_1_tiet', 1)">-</button>
+                        </div>
+                    </th>
+                    <th>Điểm thi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hoc_sinh in danh_sach_hoc_sinh %}
+                <tr>
+                    <td>{{ hoc_sinh.hoTen }}</td>
+                    <td class="cot_15p">
+                        <input type="number" name="diem_15p[]" step="0.25" min="0" max="10" value="{{ hoc_sinh.diem_15p }}">
+                    </td>
+                    <td class="cot_1_tiet">
+                        <input type="number" name="diem_1_tiet[]" step="0.25" min="0" max="10" value="{{ hoc_sinh.diem_1_tiet }}">
+                    </td>
+                    <td>
+                        <input type="number" name="diem_thi[]" step="0.25" min="0" max="10" value="{{ hoc_sinh.diem_thi }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Lưu thông tin</button>
+    </form>
+
+    <script>
+        function themCot(className, maxColumns) {
+            const table = document.getElementById('bang_diem');
+            const headers = table.querySelectorAll(`th.${className}`);
+            const rows = table.querySelectorAll('tbody tr');
+
+            if (headers.length < maxColumns) {
+                // Thêm tiêu đề cột
+                const newHeader = document.createElement('th');
+                newHeader.className = className;
+                newHeader.innerText = className === 'cot_15p' ? 'Điểm 15p' : 'Điểm 1 tiết';
+                table.querySelector('thead tr').appendChild(newHeader);
+
+                // Thêm ô nhập cho từng hàng
+                rows.forEach(row => {
+                    const newCell = document.createElement('td');
+                    newCell.className = className;
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.name = `${className}[]`;
+                    input.step = '0.25';
+                    input.min = '0';
+                    input.max = '10';
+                    newCell.appendChild(input);
+                    row.appendChild(newCell);
+                });
+            } else {
+                alert(`Không thể thêm quá ${maxColumns} cột cho ${className === 'cot_15p' ? 'Điểm 15p' : 'Điểm 1 tiết'}`);
+            }
+        }
+
+        function xoaCot(className, minColumns) {
+            const table = document.getElementById('bang_diem');
+            const headers = table.querySelectorAll(`th.${className}`);
+            const rows = table.querySelectorAll('tbody tr');
+
+            if (headers.length > minColumns) {
+                // Xóa tiêu đề cột cuối cùng
+                headers[headers.length - 1].remove();
+
+                // Xóa ô nhập cho từng hàng
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll(`td.${className}`);
+                    if (cells.length > minColumns) {
+                        cells[cells.length - 1].remove();
+                    }
+                });
+            } else {
+                alert(`Không thể xóa thêm. Cần giữ ít nhất ${minColumns} cột cho ${className === 'cot_15p' ? 'Điểm 15p' : 'Điểm 1 tiết'}`);
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -11,9 +11,14 @@ def auth_user(taikhoan, matkhau):
 def auth_giao_vien(taikhoan, matkhau):
     matkhau = str(hashlib.md5(matkhau.strip().encode('utf-8')).hexdigest())
 
-    return GiaoVien.query.filter(GiaoVien.taiKhoan.__eq__(taikhoan),
-                                 GiaoVien.matKhau.__eq__(matkhau)).first()
-
+    # return GiaoVien.query.filter(GiaoVien.taiKhoan.__eq__(taikhoan),
+    #                              GiaoVien.matKhau.__eq__(matkhau)).first()
+    gv = GiaoVien.query.filter(GiaoVien.taiKhoan.__eq__(taikhoan),
+                               GiaoVien.matKhau.__eq__(matkhau)).first()
+    if gv:
+        print(f"auth_giao_vien -> Tài khoản: {taikhoan}, Mật khẩu: {matkhau}, Kết quả: {gv}")
+        return gv
+    return None
 
 def get_nhan_vien_by_id(id):
     return NhanVien.query.get(id)

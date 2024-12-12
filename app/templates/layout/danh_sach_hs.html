@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách học sinh</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        thead {
+            background-color: #4CAF50;
+            color: white;
+        }
+        th, td {
+            text-align: center;
+            padding: 10px;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        a {
+            text-decoration: none;
+            color: #4CAF50;
+        }
+        .action-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .action-button a {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .action-button a:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <a href="/danh-sach-lop-day">Quay lại</a>
+    <h1>Danh sách học sinh lớp {{ lop.tenLop }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Họ tên</th>
+                <th>Điểm TB 15p</th>
+                <th>Điểm TB 1 tiết</th>
+                <th>Điểm Thi</th>
+                <th>Điểm Trung Bình</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hs in danh_sach_hoc_sinh %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ hs.hoTen }}</td>
+                 <td>{{ hs.tb_15p if hs.tb_15p is not none else '' }}</td>
+                 <td>{{ hs.tb_1_tiet if hs.tb_1_tiet is not none else '' }}</td>
+                 <td>{{ hs.diem_thi if hs.diem_thi is not none else '' }}</td>
+                 <td>{{ hs.diem_trung_binh if hs.diem_trung_binh is not none else '' }}</td>
+
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">Không có học sinh nào trong lớp này.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="action-button">
+        <a href="/nhap-diem/{{ lop.maDsLop }}">Nhập điểm</a>
+    </div>
+</body>
+</html>

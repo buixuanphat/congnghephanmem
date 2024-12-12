@@ -56,7 +56,7 @@ class NhanVien(db.Model, UserMixin):
         return self.vaiTro
 
 
-class GiaoVien(db.Model):
+class GiaoVien(db.Model,UserMixin):
     idGiaoVien = Column(Integer, primary_key=True)
     hoTen = Column(String(50), nullable=False)
     gioiTinh = Column(Boolean, nullable=False)
@@ -73,17 +73,20 @@ class GiaoVien(db.Model):
     def __str__(self):
         return self.hoTen
 
-    @property
-    def is_authenticated(self):
-        return True
+    def check_password(self, password):
+        return check_password_hash(self.matKhau, password)
 
-    @property
-    def is_active(self):
-        return True
-
-    @property
-    def is_anonymous(self):
-        return False
+    # @property
+    # def is_authenticated(self):
+    #     return True
+    #
+    # @property
+    # def is_active(self):
+    #     return True
+    #
+    # @property
+    # def is_anonymous(self):
+    #     return False
 
     def get_id(self):
         return str(self.idGiaoVien)
@@ -128,6 +131,15 @@ class HocSinh(db.Model):
     maDsLop = Column(Integer, ForeignKey('danh_sach_lop.maDsLop'), nullable=True)
 
     hocSinhLop = relationship('DanhSachLop', backref='danhSachHocSinh')
+    bang_diem = relationship('BangDiem', backref='hoc_sinh', lazy=True)  # Thêm quan hệ này
+
+class BangDiem(db.Model):
+    __tablename__ = 'bang_diem'
+
+    idBangDiem = db.Column(db.Integer, primary_key=True)
+    hocSinh_id = db.Column(db.Integer, db.ForeignKey('hoc_sinh.idHocSinh'), nullable=False)
+    loai_diem = db.Column(db.String(20))  # Ví dụ: "15p", "1_tiet", "thi"
+    diem = db.Column(db.Float)
 
 class PhongHoc(db.Model):
     idPhongHoc = Column(Integer, primary_key=True, autoincrement=True)
