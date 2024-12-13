@@ -142,9 +142,26 @@ class BangDiem(db.Model):
     diem = db.Column(db.Float)
     monHoc_id = db.Column(db.Integer, db.ForeignKey('mon_hoc.idMonHoc'), nullable=False)  # Môn học
     giaoVien_id = db.Column(db.Integer, db.ForeignKey('giao_vien.idGiaoVien'), nullable=False)  # Giáo viên
+    hocKy_id = db.Column(db.Integer, db.ForeignKey('hoc_ky.idHocKy'), nullable=False)  # Học kỳ
 
     mon_hoc = relationship('MonHoc', backref='bang_diem')
     giao_vien = relationship('GiaoVien', backref='bang_diem')
+    hoc_ky = relationship('HocKy', backref='bang_diem')
+
+class BangDiemTB(db.Model):
+    __tablename__ = 'bang_diem_tb'
+
+    idBangDiemTB = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    hocSinh_id = db.Column(db.Integer, db.ForeignKey('hoc_sinh.idHocSinh'), nullable=False)
+    hocKy_id = db.Column(db.Integer, db.ForeignKey('hoc_ky.idHocKy'), nullable=False)
+    diem_trung_binh = db.Column(db.Float, nullable=False)
+
+    hoc_sinh = relationship('HocSinh', backref='bang_diem_tb')
+    hoc_ky = relationship('HocKy', backref='bang_diem_tb')
+
+    def __str__(self):
+        return f"HS: {self.hocSinh_id}, HK: {self.hocKy_id}, TB: {self.diem_trung_binh}"
+
 
 class PhongHoc(db.Model):
     idPhongHoc = Column(Integer, primary_key=True, autoincrement=True)

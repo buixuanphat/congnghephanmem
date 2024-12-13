@@ -14,9 +14,10 @@
     </style>
 </head>
 <body>
-    <h1>Nhập điểm</h1>
+    <h1>Nhập điểm - Học kỳ: {{ hoc_ky.hocKy }} ({{ hoc_ky.namHoc }})</h1>
 
     <form method="POST">
+        <input type="hidden" name="hoc_ky_id" value="{{ hoc_ky.idHocKy }}">
         <table id="bang_diem">
             <thead>
                 <tr>
