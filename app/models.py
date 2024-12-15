@@ -199,6 +199,16 @@ class DanhSachLop(db.Model):
     def __str__(self):
         return f"{self.tenLop}"
 
+
+
+class QuyDinh(db.Model):
+    idQuyDinh = Column(Integer, primary_key=True, autoincrement=True)
+    min_age = Column(Integer)
+    max_age = Column(Integer)
+    si_so = Column(Integer)
+
+
+
 if __name__== '__main__':
     with app.app_context():
         db.create_all()

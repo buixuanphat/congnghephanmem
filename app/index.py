@@ -7,7 +7,7 @@ from app import app, db, dao, login
 from datetime import date, datetime
 
 from app.admin import DanhSachLopView
-from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienDayHoc, GiaoVien, MonHoc, BangDiem, BangDiemTB
+from app.models import NhanVien, HocSinh, UserRole, DanhSachLop, PhongHoc, HocKy, GiaoVienDayHoc, GiaoVien, MonHoc, BangDiem, BangDiemTB, QuyDinh
 from flask_login import login_user, logout_user, current_user
 
 app.secret_key = 'secret_key'  # Khóa bảo mật cho session
@@ -84,12 +84,21 @@ def kiem_tra_tuoi():
         hom_nay = date.today()
         tuoi = hom_nay.year - ngay_sinh.year
 
+        # Lấy các giá trị tuổi từ bảng QuyDinh
+        quy_dinh = QuyDinh.query.first()  # Lấy bản ghi đầu tiên (giả sử chỉ có một bản ghi)
+        if not quy_dinh:
+            flash("Không tìm thấy quy định về độ tuổi!", "danger")
+            return redirect('/nhan-vien')
+
+        min_age = quy_dinh.min_age
+        max_age = quy_dinh.max_age
+
         # Kiểm tra tuổi
-        if app.config["MIN_AGE"] <= tuoi <= app.config["MAX_AGE"]:
+        if min_age <= tuoi <= max_age:
             flash("Tuổi hợp lệ. Hãy nhập thông tin chi tiết.", "success")
             return render_template('layout/nhap_thong_tin_hoc_sinh.html', ngay_sinh=ngay_sinh)
         else:
-            flash(f"Tuổi không phù hợp: {tuoi} tuổi!!!", "warning")
+            flash(f"Tuổi không phù hợp: {tuoi} tuổi!!! (Quy định: {min_age} - {max_age} tuổi)", "warning")
             return redirect('/nhan-vien')
     return "Không nhận được thông tin ngày sinh!"
 
